@@ -31,8 +31,37 @@ const AddQuestionPage = () => {
     setOptions(updatedOptions);
   };
 
+  const sendQuizData = async (data) => {
+    try {
+      const response = await fetch('https://m7jaudy364.execute-api.us-east-1.amazonaws.com/prod/addquiz', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        // Successful API call, perform further actions if needed
+        console.log('Quiz data sent successfully');
+        // Reset the form fields
+        setQuestionText('');
+        setCategory('');
+        setDifficulty('');
+        setOptions([]);
+      } else {
+        // Error occurred while sending the data
+        console.error('Error sending quiz data:', response.status);
+      }
+    } catch (error) {
+      console.error('Error sending quiz data:', error);
+    }
+  };
+
   const handleSubmit = (event) => {
+    
     event.preventDefault();
+
     // Send the data to the server or perform further actions
     console.log({
       questionText,
@@ -40,11 +69,16 @@ const AddQuestionPage = () => {
       difficulty,
       options,
     });
-    // Reset the form fields
-    setQuestionText('');
-    setCategory('');
-    setDifficulty('');
-    setOptions([]);
+
+    // Prepare the data to be sent
+    const data = {
+      questionText,
+      category,
+      difficulty,
+      options,
+    };
+    
+    sendQuizData(data)
   };
 
   return (
