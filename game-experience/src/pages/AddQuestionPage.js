@@ -62,6 +62,11 @@ const AddQuestionPage = () => {
     
     event.preventDefault();
 
+    if (options.length < 4) {
+      alert('Please provide at least four options.');
+      return;
+    }
+
     // Send the data to the server or perform further actions
     console.log({
       questionText,
