@@ -14,6 +14,7 @@ const AddQuestionPage = () => {
   const [category, setCategory] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [options, setOptions] = useState([]);
+  const [questionTitle, setQuestionTitle] = useState('');
 
   const handleAddOption = () => {
     setOptions([...options, '']);
@@ -45,6 +46,7 @@ const AddQuestionPage = () => {
         // Successful API call, perform further actions if needed
         console.log('Quiz data sent successfully');
         // Reset the form fields
+        setQuestionTitle('');
         setQuestionText('');
         setCategory('');
         setDifficulty('');
@@ -69,6 +71,7 @@ const AddQuestionPage = () => {
 
     // Send the data to the server or perform further actions
     console.log({
+      questionTitle,
       questionText,
       category,
       difficulty,
@@ -77,6 +80,7 @@ const AddQuestionPage = () => {
 
     // Prepare the data to be sent
     const data = {
+      questionTitle,
       questionText,
       category,
       difficulty,
@@ -89,6 +93,15 @@ const AddQuestionPage = () => {
   return (
     <Box p={4} maxWidth="500px" margin="0 auto">
       <form onSubmit={handleSubmit}>
+        <FormControl mb={4}>
+          <FormLabel>Question Title</FormLabel>
+          <Input
+            value={questionTitle}
+            onChange={(event) => setQuestionTitle(event.target.value)}
+            required
+          />
+        </FormControl>
+
         <FormControl mb={4}>
           <FormLabel>Question Text</FormLabel>
           <Textarea
