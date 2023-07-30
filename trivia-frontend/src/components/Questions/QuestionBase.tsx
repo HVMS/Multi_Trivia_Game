@@ -58,6 +58,18 @@ const QuestionBase = () => {
         setIsModalOpen(false);
     };
 
+    // Function to add a new option field
+    const addOption = () => {
+        setQuestionForm({ ...questionForm, question_options: [...questionForm.question_options, ''] });
+    };
+
+    // Function to remove an option field
+    const removeOption = (index: number) => {
+        const updatedOptions = [...questionForm.question_options];
+        updatedOptions.splice(index, 1);
+        setQuestionForm({ ...questionForm, question_options: updatedOptions });
+    };
+
     // Form Validation
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
@@ -141,7 +153,7 @@ const QuestionBase = () => {
 
                         {/* Right-hand side */}
                         <Box>
-                            <Button colorScheme="teal" size="md" onClick={openModal}>
+                            <Button colorScheme="green" size="md" onClick={openModal}>
                                 Add Questions
                             </Button>
                         </Box>
@@ -231,21 +243,30 @@ const QuestionBase = () => {
 
                         <FormControl isRequired isInvalid={!!errors.question_options} mt={4}>
                             <FormLabel>Question Options</FormLabel>
-                            {/* Here, you can add a dynamic input field to add multiple options */}
-                            {/* For simplicity, let's assume we have a static 4 input fields */}
-                            {Array.from({ length: 4 }).map((_, index) => (
-                            <Input
-                                key={index}
+                            {questionForm.question_options.map((option, index) => (
+                            <Flex key={index} mt={2}>
+                                <Input
                                 placeholder={`Option ${index + 1}`}
-                                value={questionForm.question_options[index] || ''}
+                                value={option}
                                 onChange={(e) => {
-                                const updatedOptions = [...questionForm.question_options];
-                                updatedOptions[index] = e.target.value;
-                                setQuestionForm({ ...questionForm, question_options: updatedOptions });
+                                    const updatedOptions = [...questionForm.question_options];
+                                    updatedOptions[index] = e.target.value;
+                                    setQuestionForm({ ...questionForm, question_options: updatedOptions });
                                 }}
-                                mt={2}
-                            />
+                                mr={2}
+                                />
+                                {/* Show "Delete" button when there are more than 2 options */}
+                                {questionForm.question_options.length > 2 && (
+                                <Button colorScheme="red" onClick={() => removeOption(index)}>
+                                    Delete
+                                </Button>
+                                )}
+                            </Flex>
                             ))}
+                            {/* Show "Add" button */}
+                            <Button colorScheme="teal" mt={2} onClick={addOption}>
+                            Add Option
+                            </Button>
                             <FormErrorMessage>{errors.question_options}</FormErrorMessage>
                         </FormControl>
 
@@ -261,8 +282,11 @@ const QuestionBase = () => {
                             <FormErrorMessage>{errors.question_right_answer}</FormErrorMessage>
                         </FormControl>
 
-                        <Button colorScheme="teal" mt={4} onClick={handleSubmit}>
+                        <Button colorScheme="green" mt={4} onClick={handleSubmit}>
                             Submit
+                        </Button>
+                        <Button colorScheme="gray" mt={4} onClick={() => setIsModalOpen(false)}>
+                            Cancel
                         </Button>
                         </ModalBody>
                     </ModalContent>
