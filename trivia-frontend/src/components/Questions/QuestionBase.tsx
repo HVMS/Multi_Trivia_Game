@@ -9,7 +9,9 @@ import { ChakraProvider, Box, Flex,
     FormControl,
     FormLabel,
     Input,
+    useToast,
     FormErrorMessage, Button, Select, Heading } from '@chakra-ui/react';
+    import { Table, Thead, Tbody, Tr, Th, Td} from "@chakra-ui/react"
 
 interface Game {
     id: number;
@@ -20,22 +22,24 @@ interface Question {
     question_name: string;
     question_category: string;
     question_difficulty: string;
-    game_name: string;
     question_options: string[];
     question_right_answer: string;
   }
 
 const QuestionBase = () => {
+
+    const toast = useToast();
     const [gamesList, setGamesList] = useState<Game[]>([]);
     const [selectedGame, setSelectedGame] = useState<string>('');
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+    const [questionList, setQuestionList] = useState<Question[]>([]);
   
     // Question Form State
     const [questionForm, setQuestionForm] = useState<Question>({
         question_name: '',
         question_category: '',
         question_difficulty: '',
-        game_name: '',
         question_options: [],
         question_right_answer: '',
     });
@@ -45,16 +49,17 @@ const QuestionBase = () => {
 
     useEffect(() => {
         // Fetch the games list from the API
-        fetchGamesList();
+        fetchQuestionList();
     }, []);
 
     // Modal Actions
     const openModal = () => {
+        resetForm();
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
-        setErrors({});
+        resetForm();
         setIsModalOpen(false);
     };
 
@@ -76,101 +81,235 @@ const QuestionBase = () => {
 
         // Validate question_name
         if (!questionForm.question_name) {
-        newErrors['question_name'] = 'Question Name is required';
+            newErrors['question_name'] = 'Question Name is required';
         }
 
         // Validate question_category
         if (!questionForm.question_category) {
-        newErrors['question_category'] = 'Question Category is required';
+            newErrors['question_category'] = 'Question Category is required';
         }
 
         // Validate question_difficulty
         if (!questionForm.question_difficulty) {
-        newErrors['question_difficulty'] = 'Question Difficulty is required';
-        }
-
-        // Validate game_name
-        if (!questionForm.game_name) {
-        newErrors['game_name'] = 'Game Name is required';
+            newErrors['question_difficulty'] = 'Question Difficulty is required';
         }
 
         // Validate question_options
         if (questionForm.question_options.length === 0) {
-        newErrors['question_options'] = 'At least one Question Option is required';
+            newErrors['question_options'] = 'At least one Question Option is required';
+        } else {
+        // Check if any question option is empty
+            if (questionForm.question_options.some((option) => option.trim() === '')) {
+                newErrors['question_options'] = 'Question Options cannot be empty';
+            }
         }
 
         // Validate question_right_answer
         if (!questionForm.question_right_answer) {
-        newErrors['question_right_answer'] = 'Question Right Answer is required';
+            newErrors['question_right_answer'] = 'Question Right Answer is required';
+        }else {
+        // Check if the question right answer is one of the options
+            if (!questionForm.question_options.includes(questionForm.question_right_answer)) {
+                newErrors['question_right_answer'] = 'Question Right Answer should be one of the options';
+            }
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = () => {
+    // Function to reset the form fields
+    const resetForm = () => {
+        setQuestionForm({
+            question_name: '',
+            question_category: '',
+            question_difficulty: '',
+            question_options: [],
+            question_right_answer: '',
+        });
+        setErrors({}); // Clear the validation errors as well
+    };
+
+    const handleSubmit = async () => {
         if (validateForm()) {
-          // Perform form submission or API call here
-          // If the form is valid, you can proceed with the submission or API call
-          console.log('Form submitted:', questionForm);
-        }
-      };    
 
-    const fetchGamesList = async () => {
-        try {
-        const response = await fetch('https://w3r49v036h.execute-api.us-east-1.amazonaws.com/prod/getgames');
+            try{
+                const response = await fetch('https://t7qqp9mnfk.execute-api.us-east-1.amazonaws.com/prod/addquestion',{
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ questionForm }),
+                })
 
-        console.log("API Response :", response);
+                const responseData = await response.json();
 
-        const data = await response.json();
+                console.log("API Response is : ",responseData);
 
-        console.log("data is : ",data);
-        console.log("data type ", typeof(data));
+                if (responseData.statusCode === 200) {
+                    console.log('Question added successfully to DynamoDB');
+                    console.log('Form submitted:', questionForm);
+
+                    console.log("body of response is : ",response.body);
+
+                    // Show Success message
+                    toast({
+                        title: "Success",
+                        description: "Congrats!! Question Added Successfully.",
+                        status: "success",
+                        duration: 3000,
+                        isClosable: true,
+                    });
+
+                    // Add the new question to the questionList state
+                    setQuestionList(prevQuestionList => [...prevQuestionList, questionForm]);
+                    // Reset the form fields
+                    resetForm();
+
+                    // Close the modal
+                    setIsModalOpen(false);
+
+                  } else if (responseData.statusCode === 409){
+                    // Successful API call, perform further actions if needed
+                    console.log('The Question name you created is already exists...');
         
-        // Check if data is an array before setting it to state
-        if (typeof data === "object" && !Array.isArray(data)) {
-            const dataArray: Game[] = Object.values(data['body']);
-            console.log("data is : ", dataArray);
-            setGamesList(dataArray);
-        } else {
-            setGamesList([]); // If not an array, set an empty array
+                    // Show Error message
+                    toast({
+                        title: "Error",
+                        description: "Ops!! Question name already exists.",
+                        status: "error",
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                  } else {
+                    console.error('Error adding question to DynamoDB');
+                     // Show Error message
+                    toast({
+                        title: "Error",
+                        description: "Ops!! Something went wrong in the question adding process.",
+                        status: "error",
+                        duration: 3000,
+                        isClosable: true,
+                    });
+                  }
+            }catch(error){
+                console.log("error in creating questions", error);
+            }
         }
+    };    
+
+    const fetchQuestionList = async () => {
+        try {
+          const response = await fetch('https://t7qqp9mnfk.execute-api.us-east-1.amazonaws.com/prod/getquestions');
+
+          const data = await response.json();
+          
+          // Check if data is an array before setting it to state
+          if (typeof data === "object" && !Array.isArray(data)) {
+            const dataArray: Question[] = Object.values(data['body']);
+            setQuestionList(dataArray);
+          } else {
+            setQuestionList([]); // If not an array, set an empty array
+          }
         } catch (error) {
-        console.error('Error fetching game data:', error);
+          console.error('Error fetching question data:', error);
+        }
+      };
+
+    // Function to delete a question
+    const handleDelete = async (questionName: string) => {
+        try {
+
+            console.log(questionName);
+
+            const response = await fetch('https://t7qqp9mnfk.execute-api.us-east-1.amazonaws.com/prod/deletequestion', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ questionName }),
+            });
+
+            console.log(response);
+
+            const responseData = await response.json();
+
+            console.log(responseData);
+
+            if (responseData.statusCode === 200) {
+                console.log(`Question "${questionName}" deleted successfully`);
+                // Update questionList state by filtering out the deleted question
+                setQuestionList((prevQuestionList) => prevQuestionList.filter((question) => question.question_name !== questionName));
+            } else {
+                console.error(`Error deleting question "${questionName}"`);
+                // Show Error message
+                toast({
+                    title: "Error",
+                    description: `Ops!! Error deleting question "${questionName}"`,
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                });
+            }
+        } catch (error) {
+            console.log("Error deleting question:", error);
         }
     };
 
     return (
         <ChakraProvider>
             <Box p={4}>
-                    <Flex align="center" justify="space-between" padding="20px">
-                        {/* Left-hand side */}
-                        <Box>
-                            <Heading as="h2" size="lg">
-                                Questions By Games List
-                            </Heading>
-                        </Box>
+                <Flex align="center" justify="space-between" padding="20px">
+                    {/* Left-hand side */}
+                    <Box>
+                        <Heading as="h2" size="lg">
+                            Questions List
+                        </Heading>
+                    </Box>
 
-                        {/* Right-hand side */}
-                        <Box>
-                            <Button colorScheme="green" size="md" onClick={openModal}>
-                                Add Questions
-                            </Button>
-                        </Box>
-                    </Flex>
+                    {/* Right-hand side */}
+                    <Box>
+                        <Button colorScheme="green" size="md" onClick={openModal}>
+                            Add Questions
+                        </Button>
+                    </Box>
+                </Flex>
                 <Box>
-                    <Select
-                    placeholder="Select a game"
-                    onChange={(e) => setSelectedGame(e.target.value)}
-                    value={selectedGame}
-                    >
-                    {gamesList.map((game) => (
-                        <option key={game.id} value={game.game_name}>
-                        {game.game_name}
-                        </option>
-                    ))}
-                    </Select>
-                </Box>
+                    {questionList.length === 0 ? (
+                        <Heading as="h3" size="lg" textAlign="center">
+                            No Questions added yet
+                        </Heading>
+                    ) : (
+                        <Table variant="simple">
+                            <Thead>
+                                <Tr>
+                                    <Th>Question Name</Th>
+                                    <Th>Question Category</Th>
+                                    <Th>Question Difficulty</Th>
+                                    <Th>Action</Th>
+                                </Tr>
+                            </Thead>
+                            <Tbody>
+                                {questionList.map((question, index) => (
+                                    <Tr key={index}>
+                                        <Td>{question.question_name}</Td>
+                                        <Td>{question.question_category}</Td>
+                                        <Td>{question.question_difficulty}</Td>
+                                        <Td>
+                                            {/* Edit and Delete buttons for each row */}
+                                            <Button colorScheme="blue" size="sm" mr={2}>
+                                                Edit
+                                            </Button>
+                                            <Button colorScheme="red" size="sm" onClick={() => handleDelete(question.question_name)}>
+                                                Delete
+                                            </Button>
+                                        </Td>
+                                    </Tr>
+                                ))}
+                            </Tbody>
+                        </Table>
+                    )}
+                </Box>    
 
                 {/* Modal */}
                 <Modal isOpen={isModalOpen} onClose={closeModal}>
@@ -225,22 +364,6 @@ const QuestionBase = () => {
                             <FormErrorMessage>{errors.question_difficulty}</FormErrorMessage>
                         </FormControl>
 
-                        <FormControl isRequired isInvalid={!!errors.game_name} mt={4}>
-                            <FormLabel>Game Name</FormLabel>
-                            <Select
-                            placeholder="Select a game"
-                            value={questionForm.game_name}
-                            onChange={(e) => setQuestionForm({ ...questionForm, game_name: e.target.value })}
-                            >
-                            {gamesList.map((game) => (
-                                <option key={game.id} value={game.game_name}>
-                                {game.game_name}
-                                </option>
-                            ))}
-                            </Select>
-                            <FormErrorMessage>{errors.game_name}</FormErrorMessage>
-                        </FormControl>
-
                         <FormControl isRequired isInvalid={!!errors.question_options} mt={4}>
                             <FormLabel>Question Options</FormLabel>
                             {questionForm.question_options.map((option, index) => (
@@ -265,7 +388,7 @@ const QuestionBase = () => {
                             ))}
                             {/* Show "Add" button */}
                             <Button colorScheme="teal" mt={2} onClick={addOption}>
-                            Add Option
+                                Add Option
                             </Button>
                             <FormErrorMessage>{errors.question_options}</FormErrorMessage>
                         </FormControl>
