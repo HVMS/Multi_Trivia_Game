@@ -127,10 +127,15 @@ const AdminBase = () => {
         return;
       }
 
+      const game_details = {
+        game_name: selectedGame?.game_name,
+        gameCategory: updatedCategory,
+        gameDifficultyLevel: updatedDifficulty,
+        gameTimeFrame: updatedTimeFrame
+      }
+
       console.log("Selected game is : ",selectedGame);
-      console.log(updatedCategory);
-      console.log(updatedDifficulty);
-      console.log(updatedTimeFrame);
+      console.log("updated game details is : ",game_details);
 
       // Make the PUT API call to update the game record
       const response = await fetch('https://w3r49v036h.execute-api.us-east-1.amazonaws.com/prod/updategamedetails', {
@@ -138,12 +143,7 @@ const AdminBase = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          game_name: selectedGame?.game_name,
-          gameCategory: updatedCategory,
-          gameDifficultyLevel: updatedDifficulty,
-          gameTimeFrame: updatedTimeFrame,
-        }),
+        body: JSON.stringify({game_details}),
       });
 
       console.log("Update API response", response);
@@ -155,6 +155,7 @@ const AdminBase = () => {
         setSelectedDifficulty('');
         setSelectedTimeFrame('');
         setIsModalOpen(false);
+
         fetchGamesList();
 
         toast({
@@ -222,9 +223,9 @@ const AdminBase = () => {
                     <Thead>
                     <Tr>
                         <Th>Game Name</Th>
-                        <Th>Game Time frame</Th>
                         <Th>Game Category</Th>
                         <Th>Game Difficulty level</Th>
+                        <Th>Game Time frame</Th>
                         <Th>Action</Th>
                     </Tr>
                     </Thead>
