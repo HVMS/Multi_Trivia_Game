@@ -19,9 +19,14 @@ import {
 import GameLobbyCard from "../ui/GameLobbyCard";
 import React, { useEffect, useState } from "react";
 import { getData } from "../../services/utils";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const GameLobby = (props: any) => {
+    // const socket = new WebSocket("wss://0rs2czib7e.execute-api.us-east-1.amazonaws.com/production");
+    const socket = new WebSocket("INVALID");
     const [filterData, setFilterData] = useState([] as any);
+    const notify = (message: any) => toast.success(message);
 
     const filterClickHandler = async (popoverData: any) => {
         fetchGameData(popoverData)
@@ -73,6 +78,17 @@ const GameLobby = (props: any) => {
         fetchGameData({});
     }, []);
 
+    useEffect(() => {
+        socket.onopen = () => socket.send(JSON.stringify({ "action": "getNotifications" }));
+        socket.onmessage = (event) => {
+            console.log("EVENT===>", event);
+            const data = JSON.parse(event.data);
+            if (data.output !== undefined || data.output !== "") {
+                notify(data.output);
+            }
+        }
+    }, [socket.onmessage])
+
     return (
         <ChakraProvider>
             <Box>
@@ -101,7 +117,7 @@ const GameLobby = (props: any) => {
                     )}
 
                 </Box>
-            </Box>
+            </Box>            
         </ChakraProvider>
     )
 }
