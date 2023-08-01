@@ -4,6 +4,7 @@ import { Table, Thead, Tbody, Tr, Th, Td} from "@chakra-ui/react"
 import { Select, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, FormControl, FormLabel, Input} from "@chakra-ui/react"
 import { useNavigate } from "react-router-dom";
 import { type } from "os";
+import AssignQuestionsModal from "./AssignQuestionsModal";
 
 interface Game {
     id: number;
@@ -22,6 +23,14 @@ const AdminBase = () => {
 
   const toast = useToast();
 
+  // State to control the AssignQuestionsModal
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  
+  // State to store the selected game details for assigning questions
+  const [selectedGameForQuestions, setSelectedGameForQuestions] = useState<Game | null>(null);
+
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+
   const navigate = useNavigate();
   const [gamesList, setGamesList] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);  
@@ -38,6 +47,13 @@ const AdminBase = () => {
     // Fetch data from the API and set the state
     fetchGamesList();
   }, []);
+
+  // Function to open the AssignQuestionsModal
+  const handleAssignQuestions = (game: Game) => {
+    setSelectedGameForQuestions(game);
+    setSelectedQuestions([]); // Reset selectedQuestions when the AssignQuestionsModal is opened    
+    setIsAssignModalOpen(true);
+  };
 
   const fetchGamesList = async () => {
     try {
@@ -237,11 +253,14 @@ const AdminBase = () => {
                         <Td>{game.gameDifficultyLevel}</Td>
                         <Td>{game.gameTimeFrame}</Td>
                         <Td>
-                            <Button colorScheme="teal" size="sm" mr={2} onClick={() => handleUpdateGame(game)}>
+                            <Button colorScheme="green" size="sm" mr={2} onClick={() => handleUpdateGame(game)}>
                                 Update
                             </Button>
                             <Button colorScheme="red" size="sm" mr={2} onClick={() => handleDeleteGame(game.game_name)}>
                                 Delete
+                            </Button>
+                            <Button colorScheme="blue" size="sm" onClick={() => handleAssignQuestions(game)}>
+                              Assign Questions
                             </Button>
                         </Td>
                         </Tr>
@@ -304,6 +323,16 @@ const AdminBase = () => {
             </ModalFooter>
           </ModalContent>
         </Modal>
+
+        {/* Assign Questions Modal */}
+        <AssignQuestionsModal
+          isOpen={isAssignModalOpen}
+          onClose={() => setIsAssignModalOpen(false)}
+          selectedGameName = {selectedGameForQuestions?.game_name || ''}
+          selectedGameCategory={selectedGameForQuestions?.gameCategory || ""}
+          selectedDifficulty={selectedGameForQuestions?.gameDifficultyLevel || ""}
+          selectedQuestion={selectedQuestions} 
+        />
         
     </ChakraProvider>
     
