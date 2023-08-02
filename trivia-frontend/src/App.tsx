@@ -7,6 +7,8 @@ import QuestionBase from './components/Questions/QuestionBase';
 import GameLobby from './components/game-lobby';
 import Header from './components/header';
 import { ToastContainer } from 'react-toastify';
+import PlayGamePage from './components/game_experience/gamePage';
+import Temp from './components/game_experience/temp';
 
 export const App = () => {
   return (
@@ -19,6 +21,8 @@ export const App = () => {
           <Route path="/admin" element={<AdminBase />} />
           <Route path="/createGame" element={<GameCreatePage />} />
           <Route path='/game-lobby' element={<GameLobby />} />
+          <Route path="/playGame" element={<PlayGamePage/>} />
+          <Route path="/gaming_experience" element={<Temp/>} />
         </Routes>
       </div>
       <ToastContainer position="bottom-right"
