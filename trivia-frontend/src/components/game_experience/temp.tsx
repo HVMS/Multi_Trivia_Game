@@ -1,67 +1,83 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Button, Card, Center, ChakraProvider, Heading, Text, useToast } from '@chakra-ui/react';
+import { useNavigate  } from 'react-router-dom'; // Import useHistory hook
 
-const questions = [
-    {
-      id: 1,
-      question: 'What is the capital of France?',
-      options: ['Paris', 'London', 'Berlin', 'Rome'],
-      correctAnswer: 'Paris',
-    },
-    {
-      id: 2,
-      question: 'What is the largest planet in our solar system?',
-      options: ['Mars', 'Jupiter', 'Earth', 'Venus'],
-      correctAnswer: 'Jupiter',
-    },
-    {
-      id: 3,
-      question: 'Which country is known as the Land of the Rising Sun?',
-      options: ['China', 'Japan', 'Korea', 'Thailand'],
-      correctAnswer: 'Japan',
-    },
-    {
-      id: 4,
-      question: 'What is the chemical symbol for water?',
-      options: ['O', 'H', 'W', 'H2O'],
-      correctAnswer: 'H2O',
-    },
-  ];
+interface GameData {
+  game_name: string;
+  game_difficulty_level: string;
+  game_timeframe: number;
+}
 
-  interface GameData {
-    game_name: string;
-    game_difficulty_level: string;
-    game_timeframe: number;
-  }
+interface Question {
+  question_name: string;
+  question_options: {
+    L: { S: string }[];
+  };
+  question_right_answer: string;
+}
 
-  interface Question {
-    question_name: string;
-    question_options: {
-      L: { S: string }[];
-    };
-    question_right_answer: string;
-  }
+const TIMER_KEY = 'quiz_timer';
 
 const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
+  
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  
   const [optionsDisabled, setOptionsDisabled] = useState(false);  
   const [questions, setQuestions] = useState<Question[]>([]);
-  const toast = useToast();
-
-  const [isLastQuestionDisplayed, setIsLastQuestionDisplayed] = useState(false);
   
+  const toast = useToast();
+  const navigate = useNavigate();
+  
+  const [isLastQuestionDisplayed, setIsLastQuestionDisplayed] = useState(false);
+
+  const initialTimeframe = useMemo(() => {
+    const storedTimeframe = localStorage.getItem(TIMER_KEY);
+    if (storedTimeframe) {
+      return parseInt(storedTimeframe, 10);
+    }
+    return gameData.game_timeframe;
+  }, [gameData.game_timeframe]);
+
+  const [timeRemaining, setTimeRemaining] = useState(initialTimeframe);
+
+  useEffect(() => {
+    localStorage.setItem(TIMER_KEY, timeRemaining.toString());
+    if (timeRemaining === 0) {
+      localStorage.removeItem(TIMER_KEY);
+    }
+  }, [timeRemaining]);
+
   useEffect(() => {
     fetchData();
+    const timer = setInterval(() => {
+      setTimeRemaining((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
-    if (questions.length > 0 && currentQuestionIndex === questions.length - 1) {
-      setIsLastQuestionDisplayed(true);
-    } else {
-      setIsLastQuestionDisplayed(false);
+    if (timeRemaining === 0) {
+      handleTimerEnd();
+      redirectToLeaderBoard();
     }
-  }, [currentQuestionIndex, questions]);
+  }, [timeRemaining]);
+
+  const redirectToLeaderBoard = () => {
+    navigate('/leaderboard');
+  };
+
+  const handleTimerEnd = () => {
+    toast({
+      title: 'Time is up!',
+      description: 'The quiz has ended.',
+      status: 'info',
+      duration: 5000,
+      isClosable: true,
+    });
+    setSelectedOption(null);
+    setOptionsDisabled(true);
+  };
 
   const currentQuestion = questions[currentQuestionIndex];
   const isOptionSelected = selectedOption !== null;
@@ -131,6 +147,9 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     <ChakraProvider>
       <Center h="100vh">
         <Box maxW="xl">
+          <Box position="absolute" top={4} right={4} fontSize="xl">
+            Time remaining: {timeRemaining} s
+          </Box>
           {currentQuestion ? ( // Check if currentQuestion exists before accessing its properties
             <Box borderWidth={2} borderRadius="lg" borderColor={isOptionSelected ? (isCorrectAnswer ? 'green' : 'red') : 'black'} p={8}>
               <Heading mb={4}>Question {currentQuestionIndex + 1}</Heading>
