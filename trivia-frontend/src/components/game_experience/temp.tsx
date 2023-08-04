@@ -50,6 +50,8 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   const toast = useToast();
   const [initialTimeframe, setInitialTimeframe] = useState(gameData.game_timeframe);
   const [timeRemaining, setTimeRemaining] = useState(initialTimeframe);
+  const [isLastQuestionDisplayed, setIsLastQuestionDisplayed] = useState(false);
+
   
   useEffect(() => {
     let globalTimer: NodeJS.Timeout;
@@ -64,6 +66,22 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
 
     return () => clearInterval(globalTimer);
   }, [timeRemaining]);
+
+  // useEffect(() => {
+  //   if (questions.length > 0 && currentQuestionIndex === questions.length - 1) {
+  //     setIsLastQuestionDisplayed(true);
+  //   } else {
+  //     setIsLastQuestionDisplayed(false);
+  //   }
+  // }, [currentQuestionIndex, questions]);
+
+  useEffect(() => {
+    if (questions.length > 0 && currentQuestionIndex === questions.length - 1) {
+      setIsLastQuestionDisplayed(true);
+    } else {
+      setIsLastQuestionDisplayed(false);
+    }
+  }, [currentQuestionIndex, questions]);
 
   useEffect(() =>{
     fetchData();
@@ -81,18 +99,11 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     setOptionsDisabled(true);
   };
 
-  const handleNextClick = () => {
-    setSelectedOption(null);
-    setOptionsDisabled(false);
-    setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % questions.length);
-  };
-
   const currentQuestion = questions[currentQuestionIndex];
   const isOptionSelected = selectedOption !== null;
   const isCorrectAnswer =
     isOptionSelected && currentQuestion?.question_options.L[selectedOption].S === currentQuestion.question_right_answer;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
-
 
   const handleOptionClick = (index: number) => {
     if (!optionsDisabled) {
@@ -128,6 +139,28 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+
+  const handleNextClick = () => {
+    setSelectedOption(null);
+    setOptionsDisabled(false);
+    if (currentQuestionIndex === questions.length - 1) {
+      // If the current question is the last question, do not allow the "Next" button click.
+      return;
+    }
+    setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % questions.length);
+  };
+
+  const handleFinishClick = () => {
+    // Perform any action you want when the user tries to finish the quiz prematurely
+    // For example, show a toast message or a modal
+    toast({
+      title: 'Cannot Finish Yet!',
+      description: 'Please answer all questions before finishing the quiz.',
+      status: 'warning',
+      duration: 5000,
+      isClosable: true,
+    });
   };
   
   return (
@@ -168,9 +201,16 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
           ) : (
             <Text fontSize="xl">Loading questions...</Text>
           )}
-          <Button onClick={handleNextClick} mt={4} colorScheme="blue" isDisabled={!isOptionSelected}>
-            Next
-          </Button>
+          {!isLastQuestionDisplayed && (
+            <Button onClick={handleNextClick} mt={4} colorScheme="blue" isDisabled={!isOptionSelected}>
+              Next
+            </Button>
+          )}
+          {isLastQuestionDisplayed && (
+            <Button onClick={handleFinishClick} mt={4} colorScheme="green" isDisabled={!isOptionSelected}>
+              Finish
+            </Button>
+          )}
         </Box>
       </Center>
     </ChakraProvider>
