@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Button, Card, Center, ChakraProvider, Heading, Text, useToast } from '@chakra-ui/react';
 import { useNavigate  } from 'react-router-dom'; // Import useHistory hook
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc, setDoc, addDoc, getDoc, collection, getDocs } from 'firebase/firestore';
 
 interface GameData {
   game_name: string;
@@ -36,6 +36,9 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   
   const [userScore, setUserScore] = useState(0);
   const [teamScore, setTeamScore] = useState<number>(0);
+  
+  // State to track if data has been fetched from Firestore
+  const [dataFetched, setDataFetched] = useState(false);
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -122,6 +125,44 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     isOptionSelected && currentQuestion?.question_options.L[selectedOption].S === currentQuestion.question_right_answer;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
+  const updateScoresInDatabase = async (newUserScore: number, newTeamScore: number) => {
+    try {
+
+      const firestore = getFirestore();
+      const gameScoreRef = doc(firestore, 'gameScore', 'gameDetails');
+
+      // Fetch the existing game details from the database
+      const gameScoreSnapshot = await getDoc(gameScoreRef);
+      const existingGameDetails = gameScoreSnapshot.exists() ? gameScoreSnapshot.data() : {};
+
+      console.log("Existing game details: ",existingGameDetails);
+
+      // Update the user score and team score in the game details
+      const updatedTeamDetails = {
+        ...existingGameDetails?.teamDetails,
+        userScores: [
+          ...(existingGameDetails?.teamDetails?.userScores || []),
+          { useremail: gameData.userEmail, score: newUserScore },
+        ],
+        teamScore: {
+          totalScore: newTeamScore,
+        },
+      };
+
+      console.log("updatedTeamDetails details: ",updatedTeamDetails);
+
+      // Update the game details in the database
+      const updatedGameDetails = {
+        gameName: gameData.game_name,
+        teamDetails: updatedTeamDetails,
+      };
+
+      await updateDoc(gameScoreRef, updatedGameDetails);
+    } catch (error) {
+      console.error('Error updating user and team scores:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchTeamScore = async () => {
       try {
@@ -144,15 +185,10 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   const handleOptionClick = (index: number) => {
     if (!optionsDisabled) {
       if (currentQuestion.question_options.L[index].S === currentQuestion.question_right_answer) {
-        // If the selected option is correct, increment the user's score
-        setUserScore((prevScore) => prevScore + 1);
-
-        // Increment the team score as well
-        setTeamScore((prevScore) => prevScore + 1);
-        
-        // Update the team score in the database
-        updateTeamScoreInDatabase(teamScore + 1);
-
+        // If the selected option is correct, increment the user's score and the team score
+        setUserScore((prevUserScore) => prevUserScore + 1);
+        setTeamScore((prevTeamScore) => prevTeamScore + 1);
+        updateScoresInDatabase(userScore + 1, teamScore + 1);
       }
       setSelectedOption(index);
       setOptionsDisabled(true);
@@ -179,6 +215,7 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
 
         // Update the state with the fetched questions
         setQuestions(questions);
+        setDataFetched(true);
 
         console.log("Questions:", questions);
       }
@@ -192,15 +229,12 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     setSelectedOption(null);
     setOptionsDisabled(false);
     if (currentQuestionIndex === questions.length - 1) {
-      // If the current question is the last question, do not allow the "Next" button click.
       return;
     }
     setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % questions.length);
   };
 
   const handleFinishClick = () => {
-    // Perform any action you want when the user tries to finish the quiz prematurely
-    // For example, show a toast message or a modal
     toast({
       title: 'Cannot Finish Yet!',
       description: 'Please answer all questions before finishing the quiz.',
@@ -209,44 +243,6 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
       isClosable: true,
     });
   };
-
-  const updateTeamScoreInDatabase = async (newTeamScore: number) => {
-    try {
-      const firestore = getFirestore();
-      const gameScoreRef = doc(firestore, 'teamScore', 'teamDetails');
-      console.log("Team score: ",newTeamScore);
-
-      const teamData = {
-        teamScore: newTeamScore,
-      };
-      await setDoc(gameScoreRef, teamData);
-    } catch (error) {
-      console.error('Error updating team score:', error);
-    }
-  };
-
-  useEffect(() => {
-    const updateScore = async () => {
-      try {
-        const firestore = getFirestore();
-        const userScoreRef = doc(firestore, 'gameScore', 'gameDetails');
-
-        // Create an object with the user information and score
-        const userData = {
-          email: gameData.userEmail,
-          teamName: gameData.team_name,
-          gameName: gameData.game_name,
-          score: userScore,
-        };
-
-        await setDoc(userScoreRef, userData);
-      } catch (error) {
-        console.error('Error updating score:', error);
-      }
-    };
-
-    updateScore();
-  }, [userScore]);
   
   return (
     <ChakraProvider>
@@ -261,7 +257,7 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
           <Box position="absolute" top={4} right={4} fontSize="xl">
             Time remaining: {timeRemaining} s
           </Box>
-          {currentQuestion ? ( // Check if currentQuestion exists before accessing its properties
+          {currentQuestion ? (
             <Box borderWidth={2} borderRadius="lg" borderColor={isOptionSelected ? (isCorrectAnswer ? 'green' : 'red') : 'black'} p={8}>
               <Heading mb={4}>Question {currentQuestionIndex + 1}</Heading>
               <Text fontSize="xl" mb={4}>
