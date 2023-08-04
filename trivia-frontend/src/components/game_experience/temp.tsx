@@ -48,32 +48,12 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   const [optionsDisabled, setOptionsDisabled] = useState(false);  
   const [questions, setQuestions] = useState<Question[]>([]);
   const toast = useToast();
-  const [initialTimeframe, setInitialTimeframe] = useState(gameData.game_timeframe);
-  const [timeRemaining, setTimeRemaining] = useState(initialTimeframe);
-  const [isLastQuestionDisplayed, setIsLastQuestionDisplayed] = useState(false);
 
+  const [isLastQuestionDisplayed, setIsLastQuestionDisplayed] = useState(false);
   
   useEffect(() => {
-    let globalTimer: NodeJS.Timeout;
-
-    if (timeRemaining > 0) {
-      globalTimer = setInterval(() => {
-        setTimeRemaining((prevTime) => prevTime - 1);
-      }, 1000);
-    } else {
-      handleTimerEnd();
-    }
-
-    return () => clearInterval(globalTimer);
-  }, [timeRemaining]);
-
-  // useEffect(() => {
-  //   if (questions.length > 0 && currentQuestionIndex === questions.length - 1) {
-  //     setIsLastQuestionDisplayed(true);
-  //   } else {
-  //     setIsLastQuestionDisplayed(false);
-  //   }
-  // }, [currentQuestionIndex, questions]);
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (questions.length > 0 && currentQuestionIndex === questions.length - 1) {
@@ -82,22 +62,6 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
       setIsLastQuestionDisplayed(false);
     }
   }, [currentQuestionIndex, questions]);
-
-  useEffect(() =>{
-    fetchData();
-  },[]);
-
-  const handleTimerEnd = () => {
-    toast({
-      title: 'Time is up!',
-      description: 'The quiz has ended.',
-      status: 'info',
-      duration: 5000,
-      isClosable: true,
-    });
-    setSelectedOption(null);
-    setOptionsDisabled(true);
-  };
 
   const currentQuestion = questions[currentQuestionIndex];
   const isOptionSelected = selectedOption !== null;
@@ -167,9 +131,6 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     <ChakraProvider>
       <Center h="100vh">
         <Box maxW="xl">
-          <Box position="absolute" top={4} right={4} fontSize="xl">
-            Time remaining: {timeRemaining} s
-          </Box>
           {currentQuestion ? ( // Check if currentQuestion exists before accessing its properties
             <Box borderWidth={2} borderRadius="lg" borderColor={isOptionSelected ? (isCorrectAnswer ? 'green' : 'red') : 'black'} p={8}>
               <Heading mb={4}>Question {currentQuestionIndex + 1}</Heading>
