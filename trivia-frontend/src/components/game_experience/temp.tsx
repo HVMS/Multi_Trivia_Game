@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Button, Card, Center, ChakraProvider, Heading, Text, useToast } from '@chakra-ui/react';
 import { useNavigate  } from 'react-router-dom'; // Import useHistory hook
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
 interface GameData {
   game_name: string;
   game_difficulty_level: string;
   game_timeframe: number;
+  userEmail: string;
+  team_name: string;
 }
 
 interface Question {
@@ -15,6 +19,16 @@ interface Question {
   };
   question_right_answer: string;
 }
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBzD6iYIqdaFWr-UYiR7AI12TEdY235sR0",
+  authDomain: "serverlesssdp3.firebaseapp.com",
+  projectId: "serverlesssdp3",
+  storageBucket: "serverlesssdp3.appspot.com",
+  messagingSenderId: "248193786486",
+  appId: "1:248193786486:web:28b88f1458d87328177557",
+  measurementId: "G-8G72EE3EJN"
+};
 
 const TIMER_KEY = 'quiz_timer';
 
@@ -27,6 +41,16 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   
   const [optionsDisabled, setOptionsDisabled] = useState(false);  
   const [questions, setQuestions] = useState<Question[]>([]);
+
+  useEffect(() => {
+    const currentURL = window.location.href;
+    const queryParams = new URLSearchParams();
+    queryParams.set('user', gameData.userEmail);
+    queryParams.set('teamName', gameData.team_name);
+    queryParams.set('gameName', gameData.game_name);
+    const newURL = currentURL.split('?')[0] + '?' + queryParams.toString();
+    window.history.pushState({}, '', newURL);
+  }, [gameData]);
   
   const toast = useToast();
   const navigate = useNavigate();
@@ -58,6 +82,9 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   }, [currentQuestionIndex, questions]);
 
   useEffect(() => {
+    
+    initializeApp(firebaseConfig);
+
     fetchData();
     const timer = setInterval(() => {
       setTimeRemaining((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
@@ -155,6 +182,29 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
       isClosable: true,
     });
   };
+
+  useEffect(() => {
+    const updateScore = async () => {
+      try {
+        const firestore = getFirestore();
+        const userScoreRef = doc(firestore, 'gameScore', 'gameDetails');
+
+        // Create an object with the user information and score
+        const userData = {
+          email: gameData.userEmail,
+          teamName: gameData.team_name,
+          gameName: gameData.game_name,
+          score: userScore,
+        };
+
+        await setDoc(userScoreRef, userData);
+      } catch (error) {
+        console.error('Error updating score:', error);
+      }
+    };
+
+    updateScore();
+  }, [userScore]);
   
   return (
     <ChakraProvider>
