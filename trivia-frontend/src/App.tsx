@@ -22,8 +22,8 @@ export const App = () => {
   
   const [gameData, setGameData] = useState<GameData>({game_name: 'Game 4',
   game_difficulty_level: 'Easy',
-  game_timeframe: 12,
-  userEmail: 'test@gmail.com',
+  game_timeframe: 200,
+  userEmail: 'test5gmail.com',
   team_name: 'Team 4',
 }); // Initialize with an empty object
 
@@ -38,7 +38,7 @@ export const App = () => {
           <Route path="/createGame" element={<GameCreatePage />} />
           <Route path='/game-lobby' element={<GameLobby />} />
           <Route path="/playGame" element={<PlayGamePage/>} />
-          <Route path="/gaming_experience" element={<Temp gameData={gameData}/>} />
+          <Route path="/gaming_experience/:userEmail" element={<Temp gameData={gameData}/>} />
         </Routes>
       </div>
       <ToastContainer position="bottom-right"
