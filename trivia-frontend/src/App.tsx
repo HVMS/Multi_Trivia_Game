@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import GameCreatePage from './components/Games/createGame';
 import HomePage from './components/HomePage';
@@ -10,7 +10,18 @@ import { ToastContainer } from 'react-toastify';
 import PlayGamePage from './components/game_experience/gamePage';
 import Temp from './components/game_experience/temp';
 
+interface GameData {
+  game_name: string;
+  game_difficulty_level: string;
+  game_timeframe: number;
+}
+
 export const App = () => {
+  
+  const [gameData, setGameData] = useState<GameData>({game_name: 'Game 4',
+  game_difficulty_level: 'Easy',
+  game_timeframe: 120,}); // Initialize with an empty object
+
   return (
     <Router>
       <div className="App">
@@ -22,7 +33,7 @@ export const App = () => {
           <Route path="/createGame" element={<GameCreatePage />} />
           <Route path='/game-lobby' element={<GameLobby />} />
           <Route path="/playGame" element={<PlayGamePage/>} />
-          <Route path="/gaming_experience" element={<Temp/>} />
+          <Route path="/gaming_experience" element={<Temp gameData={gameData}/>} />
         </Routes>
       </div>
       <ToastContainer position="bottom-right"
