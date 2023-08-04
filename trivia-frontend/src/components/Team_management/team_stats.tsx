@@ -1,25 +1,18 @@
 import React, { useEffect, useState } from 'react';
-//import AWS from 'aws-sdk';
 import InvitePlayer from './invite_player';
 import CreateTeam from './create_team';
-import RemoveMember from './remove-member';
-var AWS = require("aws-sdk");
-// config.ts
-//import envVariables from './importenv';
+import {
+  Box,
+  Button,
+  Heading,
+  Text,
+  List,
+  ListItem,
+  Flex,
+  Spacer,
+  VStack,
+} from "@chakra-ui/react";
 
-
-//const aws_access_key_id = envVariables.aws_access_key_id;
-//const aws_secret_access_key = envVariables.aws_secret_access_key;
-//const aws_session_token = envVariables.aws_session_token;
-
-AWS.config.update({
-  region: 'us-east-1',
-  credentials: new AWS.Credentials({
-      accessKeyId: "ASIA3EMVPIHUAGCW5UOI",
-      secretAccessKey: "0Q6hEVE8aHGyyrTj/SHbF5Q5CfQZ3wsGcz4s5oyr",
-      sessionToken: "FwoGZXIvYXdzEOT//////////wEaDNhFTXZZElqrRPmjtiLAAQY6RS0dHDvTva3Kg7aWr9ePmIHWOv3UgjOJ0fAv7/fHzv3WADHTxVbgNY1/eR8Qa1klD0a3A0yarz79y1RhNl9uY3wRoLEMli7FxQFP4hA7FZeWCx+WiScsmFioZUHDITke+FG1o4nJFhNKA8u8yvCTHjwCGhtAJVh6R/P8RgZiP0lf1AXtzBEuQe9MuFV8rQCl0HF+KmPAGFZ/rw86SLbkkaWQYDdWh5aMROPb0lEbP+iP24FeI4DaoXhQJrytyCj734ymBjItkEHwNPrZIfn12KwTv11fY3bgFhGBIczsekmpPa7emvy7uqVO4lGOF7gGX2Fx",
-  }),
-});
 
 interface Team {
     teamName: string;
@@ -30,79 +23,87 @@ interface Team {
   }
   
   function TeamStats() {
-    const [gamesPlayed, setGamesPlayed] = useState(0);
-    const [winCount, setWinCount] = useState(0);
-    const [lossCount, setLossCount] = useState(0);
-    const [totalPoints, setTotalPoints] = useState(0);
-    const [teamMembers, setTeamMembers] = useState([]);
-    const [teamName, setTeamName] = useState('');
-    const [teams, setTeams] = useState<Team[]>([]);
-  
+    let [gamesPlayed, setGamesPlayed] = useState(0);
+    let [winCount, setWinCount] = useState(0);
+    let [lossCount, setLossCount] = useState(0);
+    let [totalPoints, setTotalPoints] = useState(0);
+    let [teamMembers, setTeamMembers] = useState([]);
+    let [teamName, setTeamName] = useState('');
+    let [teams, setTeams] = useState<Team[]>([]);
 
-  const dynamodb = new AWS.DynamoDB();
-
-  const fetchDataFromDynamoDB = async () => {
-    const params = {
-      TableName: 'TeamStats',
-    };
-
-    try {
-      const data = await dynamodb.scan(params).promise();
-      if (data.Items && data.Items.length > 0) {
-        const teamDetails: Team[] = data.Items.map((item: { TeamID: { S: any; }; GamesPlayed: { N: any; }; Wins: { N: any; }; Losses: { N: any; }; TotalPoints: { N: any; }; }) => ({
-          teamName: item.TeamID.S || '',
-          gamesPlayed: Number(item.GamesPlayed.N || 0),
-          winCount: Number(item.Wins.N || 0),
-          lossCount: Number(item.Losses.N || 0),
-          totalPoints: Number(item.TotalPoints.N || 0),
-        }));
-
-        setTeams(teamDetails);
+    const user = localStorage.getItem('email');
+  const fetchTeamNames = async (user: string | null) => {
+    console.log(user);
+    fetch('https://k4ru2wkr7a.execute-api.us-east-1.amazonaws.com/prod/fetchTeamNames', {
+      method: 'POST',
+      body: JSON.stringify({
+        'email': user,
+      }),
+    }).then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data);
+      if(data.length>0){
+      setTeams(data);
       }
-    } catch (error) {
-      console.error('Error fetching data from DynamoDB:', error);
-    }
+    }).catch((error) => {
+      console.error('Error:', error);
+    });
+  };
+    
+
+  const fetchDataFromDynamoDB = async (team: string) => {
+    fetch('https://k4ru2wkr7a.execute-api.us-east-1.amazonaws.com/prod/fetchdatafromdb', {
+      method: 'POST',
+      body: JSON.stringify({
+        'team': team,
+      }),
+    }).then((response) => {
+      return response.json();
+    }).then((data) => {
+      setTeamName(data.TeamID['S']);
+      setGamesPlayed(data.GamesPlayed['N']);
+      setWinCount(data.Wins['N']);
+
+      setLossCount(data.Losses['N']);
+      setTotalPoints(data.TotalPoints['N']);
+
+    }).catch((error) => {
+      console.error('Error:', error);
+    });
   };
 
+
   const fetchTeamMembersFromDynamoDB = async (teamName: string | undefined) => {
-    const params = {
-      TableName: 'TeamDetails',
-    };
-    try{
-      const data=await dynamodb.scan(params).promise();
-  //    console.log(data.Items);
-      console.log(teamName);
-      let arr=[];
-   //   console.log(data.Items)
-      if (data.Items && data.Items.length > 0) {
-     //   console.log(data.Items);
-        for(let i=0;i<data.Items.length;i++){
-        //  console.log(data.Items[i].TeamName.S);
-          if( data.Items[i].TeamName.S===teamName){
-            console.log(data.Items[i]);
-            const size = Object.keys(data.Items[i]).length;
-            console.log(size); // Output: 2
-            for(let j=1;j<size;j++){
-              console.log(data.Items[i][`user${j}`].S);
-              arr.push(data.Items[i][`user${j}`].S);
-            }
-
-          }
-        }
-      }      
-    }catch(error){
-      console.error('Error fetching data from DynamoDB:', error);
-    }
-
+    console.log(teamName);
+    fetch('https://k4ru2wkr7a.execute-api.us-east-1.amazonaws.com/prod/fetchteammembers', {
+      method: 'POST',
+      body: JSON.stringify({
+        'team': teamName,
+      }),
+    }).then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data);
+      if(data.length>0){
+      setTeamMembers(data);
+      }
+    }).catch((error) => {
+      console.error('Error:', error);
+    });
     }
 
   useEffect(() => {
-    fetchTeamMembersFromDynamoDB(teamName);
-    fetchDataFromDynamoDB();
+   // fetchTeamMembersFromDynamoDB(teamName);
+    fetchTeamNames(user);
   }, []);
 
   useEffect(() => {
     const chosenTeam = teams.find((team) => team.teamName === teamName);
+    console.log(chosenTeam);
+    console.log(teams);
     if (chosenTeam) {
       setGamesPlayed(chosenTeam.gamesPlayed);
       setWinCount(chosenTeam.winCount);
@@ -112,125 +113,187 @@ interface Team {
   }, [teamName, teams]);
 
   const handleAddGame = () => {
-    //add data to dynamodb
-    const params = {
-        TableName: 'TeamStats',
-        Item: {
-            TeamID: { S: teamName },
-            GamesPlayed: { N: String(gamesPlayed + 1) },
-            Wins: { N: String(winCount) },
-            Losses: { N: String(lossCount) },
-            TotalPoints: { N: String(totalPoints) },
-            },
-        };
-        dynamodb.putItem(params, (err: any, data: any) => {
-            if (err) {
-                console.error('Error adding game to DynamoDB', err);
-            } else {
-                console.log('Successfully added game to DynamoDB', data);
-            }
-        });
-    setGamesPlayed(gamesPlayed + 1);
+    fetch('https://n39biejcka.execute-api.us-east-1.amazonaws.com/prod/increment',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        'team': teamName,
+        'Add_To_Attribute': 'Games Played',
+      }),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      console.log(gamesPlayed);
+      //type of gamesPlayed
+      console.log(typeof(gamesPlayed));
+      //convert to number
+      setGamesPlayed(Number(gamesPlayed) + 1);
+    })
+    .catch((error) => {
+      console.error('Error adding win to DynamoDB', error);
+    });
   };
 
   const handleAddWin = () => {
-    const teamID = teamName;
-    const params = {
-        TableName: 'TeamStats',
-        Key: {
-            TeamID: { S: teamID },
-        },
-        UpdateExpression: 'SET Wins = Wins + :increment',
-        ExpressionAttributeValues: {
-            ':increment': { N: '1' }
-        }
-    };
-        dynamodb.updateItem(params, (err: any, data: any) => {
-            if (err) {
-                console.error('Error adding win to DynamoDB', err);
-            }
-            else {
-                console.log('Successfully added win to DynamoDB', data);
-                setWinCount(winCount + 1);
-            }
-        });
+    fetch('https://n39biejcka.execute-api.us-east-1.amazonaws.com/prod/increment',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        'team': teamName,
+        'Add_To_Attribute': 'Wins',
+      }),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      setWinCount(Number(winCount) + 1);
+    })
+    .catch((error) => {
+      console.error('Error adding win to DynamoDB', error);
+    });
     };
 
     const handleAddLoss = () => {
-        const teamID = teamName;
-        const params = {
-          TableName: 'TeamStats',
-          Key: {
-            TeamID: { S: teamID },
-          },
-          UpdateExpression: 'SET Losses = Losses + :increment',
-          ExpressionAttributeValues: {
-            ':increment': { N: '1' }
-          }
-        };
-      
-        dynamodb.updateItem(params, (err: any, data: any) => {
-          if (err) {
-            console.error('Error adding loss to DynamoDB', err);
-          } else {
-            console.log('Successfully added loss to DynamoDB', data);
-            setLossCount(lossCount + 1);
-          }
-        });
+      fetch('https://n39biejcka.execute-api.us-east-1.amazonaws.com/prod/increment',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          'team': teamName,
+          'Add_To_Attribute': 'Losses',
+        }),
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        setLossCount(Number(lossCount) + 1);
+      })
+      .catch((error) => {
+        console.error('Error adding win to DynamoDB', error);
+      });
       };
       
   const handleAddPoints = (points: number) => {
+    //TODO
     setTotalPoints(totalPoints + points);
   };
 
-  const handleLeaveTeam = () => {
+  const handleLeaveTeam = (member: string | null) => {
+      var values = {
+          "team": teamName,
+          "email": member
+        };
+
+      fetch(' https://5796bzmorl.execute-api.us-east-1.amazonaws.com/prod/remove-player', {
+          method: 'POST',
+          body: JSON.stringify(values),
+      })
+          .then((response) => response.json())
+          .then((data) => {
+              console.log(data);
+              if (data.statusCode == 200) {
+                  alert('Member Removed');
+              }
+              else if (data.statusCode == 404) {
+                  if(data.body == "User with email Admin not found in the DynamoDB item.")
+                  alert('Member Not Found');
+                  else if(data.body == "Item not found in the DynamoDB table.")
+                  alert('Team Not Found');
+                  
+              }
+              else {
+                  console.error('Error:', data);
+                  alert('Error');
+              }
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+              alert('Error');
+          });
+
     // TODO: Implement leaving the team
   };
 
       function selectTeam(teamName: string): void {
-        fetchDataFromDynamoDB();
-        fetchTeamMembersFromDynamoDB(teamName);
+        fetchTeamNames(user);
+     //   fetchTeamMembersFromDynamoDB(teamName);
           setTeamName(teamName);
+          console.log(teamName);
+              const chosenTeam = teams.find((team) => team.teamName === teamName);
+            fetchDataFromDynamoDB(teamName);
+            fetchTeamMembersFromDynamoDB(teamName);
       }
 // https://n39biejcka.execute-api.us-east-1.amazonaws.com/prod/increment add game wins losses api // to be called when user starts and finishes a game
-  return (
-    <div>
-      <CreateTeam/>
-      <InvitePlayer/>
-      <h2>Team Statistics: {teamName}</h2>
-      <p>Games Played: {gamesPlayed}</p>
-      <p>Win/Loss Ratio: {winCount}/{lossCount}</p>
-      <p>Total Points Earned: {totalPoints}</p>
-      <h3>------------- Testing purpose -------------</h3>
-      <button onClick={handleAddGame}>Add Game</button>
-      <button onClick={handleAddWin}>Add Win</button>
-      <button onClick={handleAddLoss}>Add Loss</button>
-      <button onClick={() => handleAddPoints(10)}>Add Points</button>
-      <h3>------------- Testing purpose -------------</h3>
+return (
+  <Box maxW="600px" mx="auto" p="20px">
+    <VStack spacing={4}>
+      <CreateTeam />
+      <InvitePlayer />
 
-      <h2>My Team Stats</h2>
-      <ul>
-        {teams.map((team) => (
-          <li key={team.teamName}>
-            <button onClick={() => selectTeam(team.teamName)}>
-              {team.teamName}
-            </button>
-          </li>
+      <Box>
+        <Heading as="h2" size="lg" mb="10px">
+          Team Statistics: {teamName}
+        </Heading>
+        <Text>Games Played: {gamesPlayed}</Text>
+        <Text>
+          Win/Loss Ratio: {winCount}/{lossCount}
+        </Text>
+        <Text>Total Points Earned: {totalPoints}</Text>
+      </Box>
+
+      <VStack spacing={2}>
+        <Heading as="h3" size="md">
+          ------------- Testing purpose -------------
+        </Heading>
+        <Flex>
+          <Button onClick={handleAddGame}>Add Game</Button>
+          <Button onClick={handleAddWin}>Add Win</Button>
+          <Button onClick={handleAddLoss}>Add Loss</Button>
+          <Button onClick={() => handleAddPoints(10)}>Add Points</Button>
+        </Flex>
+        <Heading as="h3" size="md">
+          ------------- Testing purpose -------------
+        </Heading>
+      </VStack>
+
+      <Heading as="h2" size="lg">
+        My Team
+      </Heading>
+      <List>
+        {teams.map((team, index) => (
+          <ListItem key={index}>
+            <Button onClick={() => selectTeam(Object.values(team)[0])}>
+              {Object.keys(team)[0]}
+            </Button>
+          </ListItem>
         ))}
-      </ul>
-        <h2>Team Members</h2>
-        <ul>
+      </List>
+
+      {teamName && (
+        <Box>
+          <Heading as="h2" size="lg">
+            Team Members
+          </Heading>
+          <List>
             {teamMembers.map((member) => (
-                <li key={member}>{member}</li>
+              <ListItem
+                style={{ display: "flex", maxWidth: "fit-content" }}
+                key={member}
+              >
+                {member}
+                <Spacer />
+                <Button onClick={() => handleLeaveTeam(member)}>
+                  Remove player
+                </Button>
+              </ListItem>
             ))}
-        </ul>
-      <button onClick={handleLeaveTeam}>Leave Team</button>
-      <RemoveMember/>
-      <br/>
-      <br/>
-      
-    </div>
-  );
+          </List>
+          <Button onClick={() => handleLeaveTeam(user)}>Leave Team</Button>
+        </Box>
+      )}
+    </VStack>
+  </Box>
+);
 }
 
 export default TeamStats;

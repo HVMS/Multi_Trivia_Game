@@ -6,11 +6,11 @@ var AWS = require("aws-sdk");
 AWS.config.update({
     region: 'us-east-1',
     credentials: new AWS.Credentials({
-        accessKeyId: "ASIA3EMVPIHUAGCW5UOI",
-        secretAccessKey: "0Q6hEVE8aHGyyrTj/SHbF5Q5CfQZ3wsGcz4s5oyr",
-        sessionToken: "FwoGZXIvYXdzEOT//////////wEaDNhFTXZZElqrRPmjtiLAAQY6RS0dHDvTva3Kg7aWr9ePmIHWOv3UgjOJ0fAv7/fHzv3WADHTxVbgNY1/eR8Qa1klD0a3A0yarz79y1RhNl9uY3wRoLEMli7FxQFP4hA7FZeWCx+WiScsmFioZUHDITke+FG1o4nJFhNKA8u8yvCTHjwCGhtAJVh6R/P8RgZiP0lf1AXtzBEuQe9MuFV8rQCl0HF+KmPAGFZ/rw86SLbkkaWQYDdWh5aMROPb0lEbP+iP24FeI4DaoXhQJrytyCj734ymBjItkEHwNPrZIfn12KwTv11fY3bgFhGBIczsekmpPa7emvy7uqVO4lGOF7gGX2Fx",
+        accessKeyId: "ASIA3EMVPIHUMJ7JMHUP",
+        secretAccessKey: "zPMqiUJt8sx15HcT9I66dgBO70cIeRX98kkervl9",
+        sessionToken: "FwoGZXIvYXdzEFwaDH2nrWvV0ScGtOnHZSLAAXYbtIORoJOXmt0DdmeX52fLQOGdtcXcUcarfuzeNqd+WiDORL9jeGsKtPUf0kymzAHwiWKG82ifFOxnvptZ+AqKU326B5iuhwe6Qjc56hyS0H1cv19qYuz9zEgg8ZeWxXj0YiKBlnKfQTAWGL/Qp4kDSXSZ8wr3uvIwCs6oLzeQLGb2L82L76aclsuWbyGcBbzJ81f3kkk9d4YBCMmF/tNveqvYEhVNETknvAEbLJLprz//dZMUZkiaUpTcKQ/ftij1gaemBjItGY4qsxzqzKt66Vwuk7+HcwX43D1QtY0GhrbP8cfgZSSTLemfLv5FueJwrH3l",
     }),
-});
+  });
 
 const InvitePlayer = () => {
     const [teamName, setTeamName] = useState('');

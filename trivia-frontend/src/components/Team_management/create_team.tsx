@@ -1,16 +1,6 @@
 import React from "react";
 import { Formik, Form, Field } from 'formik';
 import { useState } from "react";
-var AWS = require("aws-sdk");
-
-AWS.config.update({
-    region: 'us-east-1',
-    credentials: new AWS.Credentials({
-        accessKeyId: "ASIA3EMVPIHUAGCW5UOI",
-        secretAccessKey: "0Q6hEVE8aHGyyrTj/SHbF5Q5CfQZ3wsGcz4s5oyr",
-        sessionToken: "FwoGZXIvYXdzEOT//////////wEaDNhFTXZZElqrRPmjtiLAAQY6RS0dHDvTva3Kg7aWr9ePmIHWOv3UgjOJ0fAv7/fHzv3WADHTxVbgNY1/eR8Qa1klD0a3A0yarz79y1RhNl9uY3wRoLEMli7FxQFP4hA7FZeWCx+WiScsmFioZUHDITke+FG1o4nJFhNKA8u8yvCTHjwCGhtAJVh6R/P8RgZiP0lf1AXtzBEuQe9MuFV8rQCl0HF+KmPAGFZ/rw86SLbkkaWQYDdWh5aMROPb0lEbP+iP24FeI4DaoXhQJrytyCj734ymBjItkEHwNPrZIfn12KwTv11fY3bgFhGBIczsekmpPa7emvy7uqVO4lGOF7gGX2Fx",
-    }),
-});
 
 const createTeam = () => {
     const [teamName, setTeamName] = useState('');
