@@ -14,13 +14,18 @@ interface GameData {
   game_name: string;
   game_difficulty_level: string;
   game_timeframe: number;
+  userEmail: string;
+  team_name: string;
 }
 
 export const App = () => {
   
   const [gameData, setGameData] = useState<GameData>({game_name: 'Game 4',
   game_difficulty_level: 'Easy',
-  game_timeframe: 120,}); // Initialize with an empty object
+  game_timeframe: 1200,
+  userEmail: 'test@gmail.com',
+  team_name: 'Team 4',
+}); // Initialize with an empty object
 
   return (
     <Router>

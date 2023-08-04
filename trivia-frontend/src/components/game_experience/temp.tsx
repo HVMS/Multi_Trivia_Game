@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Button, Card, Center, ChakraProvider, Heading, Text, useToast } from '@chakra-ui/react';
 import { useNavigate  } from 'react-router-dom'; // Import useHistory hook
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 
 interface GameData {
   game_name: string;
@@ -35,6 +35,7 @@ const TIMER_KEY = 'quiz_timer';
 const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   
   const [userScore, setUserScore] = useState(0);
+  const [teamScore, setTeamScore] = useState<number>(0);
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -121,11 +122,37 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     isOptionSelected && currentQuestion?.question_options.L[selectedOption].S === currentQuestion.question_right_answer;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
+  useEffect(() => {
+    const fetchTeamScore = async () => {
+      try {
+        const firestore = getFirestore();
+        const gameScoreRef = doc(firestore, 'gameScore', 'gameDetails');
+        const gameScoreSnapshot = await getDoc(gameScoreRef);
+  
+        if (gameScoreSnapshot.exists()) {
+          const gameData = gameScoreSnapshot.data();
+          setTeamScore(gameData?.teamScore || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching team score:', error);
+      }
+    };
+  
+    fetchTeamScore();
+  }, []);
+
   const handleOptionClick = (index: number) => {
     if (!optionsDisabled) {
       if (currentQuestion.question_options.L[index].S === currentQuestion.question_right_answer) {
         // If the selected option is correct, increment the user's score
         setUserScore((prevScore) => prevScore + 1);
+
+        // Increment the team score as well
+        setTeamScore((prevScore) => prevScore + 1);
+        
+        // Update the team score in the database
+        updateTeamScoreInDatabase(teamScore + 1);
+
       }
       setSelectedOption(index);
       setOptionsDisabled(true);
@@ -183,6 +210,21 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     });
   };
 
+  const updateTeamScoreInDatabase = async (newTeamScore: number) => {
+    try {
+      const firestore = getFirestore();
+      const gameScoreRef = doc(firestore, 'teamScore', 'teamDetails');
+      console.log("Team score: ",newTeamScore);
+
+      const teamData = {
+        teamScore: newTeamScore,
+      };
+      await setDoc(gameScoreRef, teamData);
+    } catch (error) {
+      console.error('Error updating team score:', error);
+    }
+  };
+
   useEffect(() => {
     const updateScore = async () => {
       try {
@@ -212,6 +254,9 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
         <Box maxW="xl">
           <Box position="absolute" top={4} left={4} fontSize="xl">
             Current Score: {userScore}
+          </Box>
+          <Box position="absolute" top={36} left={4} fontSize="xl">
+            Team Score: {teamScore}
           </Box>
           <Box position="absolute" top={4} right={4} fontSize="xl">
             Time remaining: {timeRemaining} s
