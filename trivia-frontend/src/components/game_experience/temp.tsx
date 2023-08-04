@@ -20,6 +20,8 @@ const TIMER_KEY = 'quiz_timer';
 
 const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   
+  const [userScore, setUserScore] = useState(0);
+  
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   
@@ -30,7 +32,6 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   const navigate = useNavigate();
   
   const [isLastQuestionDisplayed, setIsLastQuestionDisplayed] = useState(false);
-
   const initialTimeframe = useMemo(() => {
     const storedTimeframe = localStorage.getItem(TIMER_KEY);
     if (storedTimeframe) {
@@ -47,6 +48,14 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
       localStorage.removeItem(TIMER_KEY);
     }
   }, [timeRemaining]);
+
+  useEffect(() => {
+    if (currentQuestionIndex === questions.length - 1) {
+      setIsLastQuestionDisplayed(true);
+    } else {
+      setIsLastQuestionDisplayed(false);
+    }
+  }, [currentQuestionIndex, questions]);
 
   useEffect(() => {
     fetchData();
@@ -87,6 +96,10 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
 
   const handleOptionClick = (index: number) => {
     if (!optionsDisabled) {
+      if (currentQuestion.question_options.L[index].S === currentQuestion.question_right_answer) {
+        // If the selected option is correct, increment the user's score
+        setUserScore((prevScore) => prevScore + 1);
+      }
       setSelectedOption(index);
       setOptionsDisabled(true);
     }
@@ -147,6 +160,9 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     <ChakraProvider>
       <Center h="100vh">
         <Box maxW="xl">
+          <Box position="absolute" top={4} left={4} fontSize="xl">
+            Current Score: {userScore}
+          </Box>
           <Box position="absolute" top={4} right={4} fontSize="xl">
             Time remaining: {timeRemaining} s
           </Box>
