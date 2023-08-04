@@ -17,16 +17,21 @@ import {
     Select
 } from "@chakra-ui/react";
 import GameLobbyCard from "../ui/GameLobbyCard";
-import React, { useEffect, useState } from "react";
-import { getData } from "../../services/utils";
+import React, { useEffect, useRef, useState } from "react";
+import { getData, postData } from "../../services/utils";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useWebSocket from 'react-use-websocket';
 
 const GameLobby = (props: any) => {
-    // const socket = new WebSocket("wss://0rs2czib7e.execute-api.us-east-1.amazonaws.com/production");
-    const socket = new WebSocket("INVALID");
     const [filterData, setFilterData] = useState([] as any);
+    const [userAllTeamDetails, setUserAllTeamDetails] = useState([] as any);
     const notify = (message: any) => toast.success(message);
+    const [selectedTeam, setSelectedTeam] = useState("");
+
+    const handleTeamChange = (e: any) => {
+        setSelectedTeam(e.target.value);
+    }
 
     const filterClickHandler = async (popoverData: any) => {
         fetchGameData(popoverData)
@@ -39,22 +44,7 @@ const GameLobby = (props: any) => {
             queryParams.push(`category=${encodeURIComponent(filterData.category)}`);
         }
         if (filterData.difficultyLevel && filterData.difficultyLevel != '') {
-            let difficultyLevel;
-            switch (filterData.difficultyLevel) {
-                case "EASY":
-                    difficultyLevel = 1;
-                    break;
-                case "MEDIUM":
-                    difficultyLevel = 2;
-                    break;
-                case "HARD":
-                    difficultyLevel = 3;
-                    break;
-                default:
-                    difficultyLevel = 1;
-                    break;
-            }
-            queryParams.push(`difficulty=${encodeURIComponent(difficultyLevel)}`);
+            queryParams.push(`difficulty=${encodeURIComponent(filterData.difficultyLevel)}`);
         }
         if (filterData.timeframe && filterData.timeframe != 0) {
             queryParams.push(`timeframe=${encodeURIComponent(filterData.timeframe)}`);
@@ -78,16 +68,45 @@ const GameLobby = (props: any) => {
         fetchGameData({});
     }, []);
 
-    useEffect(() => {
-        socket.onopen = () => socket.send(JSON.stringify({ "action": "getNotifications" }));
-        socket.onmessage = (event) => {
-            console.log("EVENT===>", event);
+    const {
+        sendMessage,
+        sendJsonMessage,
+        lastMessage,
+        lastJsonMessage,
+        readyState,
+        getWebSocket,
+    } = useWebSocket("wss://0rs2czib7e.execute-api.us-east-1.amazonaws.com/production", {
+        onOpen: () => console.log('opened'),
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) => {
             const data = JSON.parse(event.data);
             if (data.output !== undefined || data.output !== "") {
                 notify(data.output);
             }
         }
-    }, [socket.onmessage])
+    });
+
+    useEffect(() => {
+        sendMessage(JSON.stringify({ "action": "getNotifications" }));
+    })
+
+    const getAllUserTeamDetails = async () => {
+        const body = {
+            "email": "kushsutaria.99@gmail.com"
+        }
+        const response = await postData(JSON.stringify(body), "https://k4ru2wkr7a.execute-api.us-east-1.amazonaws.com/prod/fetchTeamNames");
+        if (response?.status == 200) {
+            const list = response?.data.map((elem: any) => {
+                return Object.keys(elem)[0];
+            })
+
+            setUserAllTeamDetails(list);
+        }
+    }
+
+    useEffect(() => {
+        getAllUserTeamDetails();
+    }, [])
 
     return (
         <ChakraProvider>
@@ -99,7 +118,16 @@ const GameLobby = (props: any) => {
                         </Heading>
                     </Box>
                     <Box>
-                        <FilterPopover filterClickHandler={filterClickHandler} />
+                        <Flex align="center" justify="space-between" padding="20px">
+                            <Box style={{ marginRight: "60px" }}>
+                                <Select placeholder='Select Team' colorScheme="teal" size="md" onChange={handleTeamChange}>
+                                    {userAllTeamDetails?.map((data: any, idx: any) => {
+                                        return <option key={idx} value={data}>{data}</option>
+                                    })}
+                                </Select>
+                            </Box>
+                            <FilterPopover filterData={filterData} filterClickHandler={filterClickHandler} />
+                        </Flex>
                     </Box>
                 </Flex>
 
@@ -107,7 +135,7 @@ const GameLobby = (props: any) => {
                     {filterData && filterData.length > 0 ? (
                         <Grid templateColumns='repeat(4, 1fr)' gap={6}>
                             {filterData.map((game: any, idx: any) => (
-                                <GameLobbyCard key={idx} gameName={game.game_name} difficultyLevel={game.difficulty_level} timeframe={game.timeframe} categories={(game.categories as string[]).toString()} />
+                                <GameLobbyCard key={idx} gameName={game.game_name} difficultyLevel={game.gameDifficultyLevel} timeframe={game.gameTimeFrame} categories={game.gameCategory} />
                             ))}
                         </Grid>
                     ) : (
@@ -117,7 +145,7 @@ const GameLobby = (props: any) => {
                     )}
 
                 </Box>
-            </Box>            
+            </Box>
         </ChakraProvider>
     )
 }
@@ -126,7 +154,8 @@ export default GameLobby;
 
 const FilterPopover = (props: any) => {
     const {
-        filterClickHandler
+        filterClickHandler,
+        filterData
     } = props;
     const initRef = React.useRef();
     const [category, setCategory] = useState("");
@@ -168,14 +197,14 @@ const FilterPopover = (props: any) => {
                                 <Box>
                                     <Stack spacing={4}>
                                         <Select placeholder='Categories' onChange={handleCategoriesChange}>
-                                            <option value='Sports'>Sports</option>
-                                            <option value='Movies'>Movies</option>
-                                            <option value='Education'>Education</option>
+                                            {filterData.map((data: any, idx: any) => {
+                                                return <option key={idx} value={data.gameCategory}>{data.gameCategory}</option>
+                                            })}
                                         </Select>
                                         <Select placeholder='Difficulty Level' onChange={handleDifficultyLevelChange}>
-                                            <option value='EASY'>EASY</option>
-                                            <option value='MEDIUM'>MEDIUM</option>
-                                            <option value='HARD'>HARD</option>
+                                            <option value='Easy'>EASY</option>
+                                            <option value='Medium'>MEDIUM</option>
+                                            <option value='Hard'>HARD</option>
                                         </Select>
                                         <Input type="number" placeholder='Maximum length (minutes)' size='md' onChange={handleTimeframeChange} />
                                     </Stack>
