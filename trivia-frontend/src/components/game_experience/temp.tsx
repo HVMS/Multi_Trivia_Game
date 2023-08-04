@@ -20,6 +20,11 @@ interface Question {
   question_right_answer: string;
 }
 
+interface TeamData {
+  team_name: string;
+  userEmail?: string[];
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyBzD6iYIqdaFWr-UYiR7AI12TEdY235sR0",
   authDomain: "serverlesssdp3.firebaseapp.com",
@@ -33,6 +38,15 @@ const firebaseConfig = {
 const TIMER_KEY = 'quiz_timer';
 
 const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
+
+  const [teamData, setTeamData] = useState<TeamData>({
+    team_name: 'Team 4',
+    userEmail: ["test1@gmail.com", "test2@gmail.com"]
+  });
+
+  const userEmailId = "test1@gmail.com";
+  const isEmailIdExists = teamData.userEmail?.includes(userEmailId);
+  console.log("Yes it is exists", isEmailIdExists);
   
   const [userScore, setUserScore] = useState(0);
   const [teamScore, setTeamScore] = useState<number>(0);
@@ -59,6 +73,29 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   }, [gameData.game_timeframe]);
 
   const [timeRemaining, setTimeRemaining] = useState(initialTimeframe);
+
+  const addUserEmail = async (email: string) => {
+    try {
+      const firestore = getFirestore();
+      const teamDataRef = doc(firestore, 'teamData', 'team4');
+
+      // Fetch the existing team data from Firestore
+      const teamDataSnapshot = await getDoc(teamDataRef);
+      const existingTeamData = teamDataSnapshot.exists() ? teamDataSnapshot.data() : {};
+
+      // Update the userEmail array with the new email
+      const updatedUserEmails = [
+        ...(existingTeamData.userEmail || []),
+        email,
+      ];
+
+      // Update the teamData in Firestore with the new userEmail array
+      await updateDoc(teamDataRef, { userEmail: updatedUserEmails });
+
+    } catch (error) {
+      console.error('Error adding user email:', error);
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem(TIMER_KEY, timeRemaining.toString());
@@ -160,30 +197,6 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
       await setDoc(gameScoreRef, updatedGameDetails);
     } catch (error) {
       console.error('Error updating user and team scores:', error);
-    }
-  };
-
-  const fetchTeamScore = async () => {
-    try {
-      const firestore = getFirestore();
-      const gameScoreRef = doc(firestore, 'gameScore', 'gameDetails');
-
-      // Fetch the initial team score
-      const gameScoreSnapshot = await getDoc(gameScoreRef);
-      if (gameScoreSnapshot.exists()) {
-        const gameData = gameScoreSnapshot.data();
-        setTeamScore(gameData?.teamDetails?.teamScore?.totalScore || 0);
-      }
-
-      // Set up real-time listener for team score updates
-      onSnapshot(gameScoreRef, (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          const gameData = docSnapshot.data();
-          setTeamScore(gameData?.teamDetails?.teamScore?.totalScore || 0);
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching team score:', error);
     }
   };
 
