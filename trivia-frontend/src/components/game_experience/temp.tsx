@@ -137,13 +137,37 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
 
       console.log("Existing game details: ",existingGameDetails);
 
+      const userEmail = gameData.userEmail;
+      const teamDetails = existingGameDetails?.teamDetails || {};
+
+      // Check if the user's email exists in the userScores array
+      const userIndex = teamDetails.userScores?.findIndex((user:any) => user.useremail === userEmail);
+
+      if (userIndex !== undefined && userIndex !== -1) {
+        // If the user's email exists, update the score for that user
+        teamDetails.userScores[userIndex].score = newUserScore;
+      } else {
+        // If the user's email doesn't exist, add a new entry for the user
+        teamDetails.userScores = [
+          ...(teamDetails.userScores || []),
+          { useremail: userEmail, score: newUserScore },
+        ];
+      }
+
       // Update the user score and team score in the game details
+      // const updatedTeamDetails = {
+      //   ...existingGameDetails?.teamDetails,
+      //   userScores: [
+      //     ...(existingGameDetails?.teamDetails?.userScores || []),
+      //     { useremail: gameData.userEmail, score: newUserScore },
+      //   ],
+      //   teamScore: {
+      //     totalScore: newTeamScore,
+      //   },
+      // };
+
       const updatedTeamDetails = {
-        ...existingGameDetails?.teamDetails,
-        userScores: [
-          ...(existingGameDetails?.teamDetails?.userScores || []),
-          { useremail: gameData.userEmail, score: newUserScore },
-        ],
+        ...teamDetails,
         teamScore: {
           totalScore: newTeamScore,
         },
@@ -157,7 +181,7 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
         teamDetails: updatedTeamDetails,
       };
 
-      await updateDoc(gameScoreRef, updatedGameDetails);
+      await setDoc(gameScoreRef, updatedGameDetails);
     } catch (error) {
       console.error('Error updating user and team scores:', error);
     }
