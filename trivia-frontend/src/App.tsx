@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import GameCreatePage from './components/Games/createGame';
 import HomePage from './components/HomePage';
 import AdminBase from './components/AdminBase';
@@ -11,25 +11,41 @@ import PlayGamePage from './components/game_experience/gamePage';
 import Temp from './components/game_experience/temp';
 import Wait from './components/game-lobby/wait';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Profile from './components/profile-management/Profile';
+import Profile from './components/profile-management/Profile'
+import Login from './components/Authentication/LoginPage';
+import Registration from './components/Authentication/RegestrationPage';
+import { useSelector } from "react-redux";
+import SecurityQuestionPage from './components/Authentication/SecurityQuestionPage';
+import { selectUser } from './redux/userSlice';
+import TeamStats from './components/Team_management/team_stats';
+import ManageTeam from './components/Team_management/manage_team';
 import Leaderboard from './components/Leaderboard/Leaderboard';
 
 export const App = () => {
+  const isAuth = useSelector(selectUser);
   return (
     <Router>
       <div className="App">
-        <Header />
+        {isAuth && (<Header />)}
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/questions" element={<QuestionBase />} />
-          <Route path="/admin" element={<AdminBase />} />
-          <Route path="/createGame" element={<GameCreatePage />} />
-          <Route path='/game-lobby' element={<GameLobby />} />
-          <Route path="/playGame" element={<PlayGamePage/>} />
-          <Route path="/gaming_experience" element={<Temp/>} />
-          <Route path="/game-lobby/wait" element={<Wait />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/" element={isAuth ? <Navigate to="/game-lobby" /> : <Login />} />
+          <Route path="/register" element={isAuth ? <Navigate to="/game-lobby" /> : <Registration />} />
+          <Route path="/security-questions" element={isAuth ? <Navigate to="/game-lobby" /> : <SecurityQuestionPage />} />
+          {isAuth && (
+            <>
+              <Route path="/questions" element={<QuestionBase />} />
+              <Route path="/admin" element={<AdminBase />} />
+              <Route path="/createGame" element={<GameCreatePage />} />
+              <Route path='/game-lobby' element={<GameLobby />} />
+              <Route path="/playGame" element={<PlayGamePage />} />
+              <Route path="/gaming_experience" element={<Temp />} />
+              <Route path="/game-lobby/wait" element={<Wait />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/team-stats" element={<TeamStats />} />
+              <Route path="/manage-team" element={<ManageTeam />} />
+            </>
+          )}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
       <ToastContainer position="bottom-right"

@@ -18,7 +18,7 @@ import {
 } from "@chakra-ui/react";
 import GameLobbyCard from "../ui/GameLobbyCard";
 import React, { useEffect, useRef, useState } from "react";
-import { getData, postData } from "../../services/utils";
+import { getData, postData, shootPushNotification } from "../../services/utils";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useWebSocket from 'react-use-websocket';
@@ -29,8 +29,9 @@ const GameLobby = (props: any) => {
     const notify = (message: any) => toast.success(message);
     const [selectedTeam, setSelectedTeam] = useState("");
 
-    const handleTeamChange = (e: any) => {
+    const handleTeamChange = async (e: any) => {
         setSelectedTeam(e.target.value);
+        await shootPushNotification(`Team Changed: ${e.target.value}.`);
     }
 
     const filterClickHandler = async (popoverData: any) => {
@@ -135,7 +136,7 @@ const GameLobby = (props: any) => {
                     {filterData && filterData.length > 0 ? (
                         <Grid templateColumns='repeat(4, 1fr)' gap={6}>
                             {filterData.map((game: any, idx: any) => (
-                                <GameLobbyCard key={idx} gameName={game.game_name} difficultyLevel={game.gameDifficultyLevel} timeframe={game.gameTimeFrame} categories={game.gameCategory} />
+                                <GameLobbyCard key={idx} gameName={game.game_name} difficultyLevel={game.gameDifficultyLevel} timeframe={game.gameTimeFrame} categories={game.gameCategory} teamName={selectedTeam} />
                             ))}
                         </Grid>
                     ) : (
