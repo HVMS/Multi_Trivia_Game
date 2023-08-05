@@ -26,6 +26,9 @@ const Header = () => {
                                     Virtual Assistant
                                 </NavDropdown.Item>
                             </NavDropdown>
+                            <Nav className="me-auto">
+                                <Nav.Link onClick={()=> navigate('/team-stats')}>My Team</Nav.Link>
+                                </Nav>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>
