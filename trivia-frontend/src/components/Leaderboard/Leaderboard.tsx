@@ -45,9 +45,10 @@ export default function Leaderboard() {
     axios.post("https://k4ru2wkr7a.execute-api.us-east-1.amazonaws.com/prod/fetchallteamstats")
     .then((resp) => {
       console.log("data received")
+      let teams=JSON.parse(resp.data.body)
       console.log(JSON.parse(resp.data.body))
-      resp.data.body.sort((a: { totalPoints: string; }, b: { totalPoints: string; }) => parseInt(b.totalPoints) - parseInt(a.totalPoints));
-      setTeam(JSON.parse(resp.data.body));
+      teams.sort((a: { TotalPoints: string; }, b: { TotalPoints: string; }) => parseInt(b.TotalPoints) - parseInt(a.TotalPoints));
+      setTeam(teams);
   })
   .catch((error) => {
       console.log("Error fetching comparison data:", error);
