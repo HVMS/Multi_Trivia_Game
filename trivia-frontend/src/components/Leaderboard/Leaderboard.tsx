@@ -11,8 +11,26 @@ interface comparedata {
     losses: string;
     teams: string[];
 }
+
+interface Team {
+
+  TeamName: string;
+
+  GamesPlayed: number;
+
+  WinCount: number;
+
+  LossCount: number;
+
+  TotalPoints: number;
+}
 export default function Leaderboard() {
   const [lead, setLead]=useState<comparedata[]>([]);
+  const [teams,setTeam]=useState<any[]>([]);
+  const [btype, setbtype]=useState("team")
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setbtype(event.target.value);
+  };
   useEffect(()=>{
     axios.post("https://us-east1-celtic-origin-387216.cloudfunctions.net/comparePlayers", { email: ' ' })
     .then((resp) => {
@@ -24,17 +42,33 @@ export default function Leaderboard() {
     .catch((error) => {
         console.log("Error fetching comparison data:", error);
     });
+    axios.post("https://k4ru2wkr7a.execute-api.us-east-1.amazonaws.com/prod/fetchallteamstats")
+    .then((resp) => {
+      console.log("data received")
+      console.log(JSON.parse(resp.data.body))
+      // resp.data.body.sort((a: { totalPoints: string; }, b: { totalPoints: string; }) => parseInt(b.totalPoints) - parseInt(a.totalPoints));
+      setTeam(JSON.parse(resp.data.body));
+  })
+  .catch((error) => {
+      console.log("Error fetching comparison data:", error);
+  });
   },[]);
   let currentIndex=1;
   return (
-    <div>
-     {
-        
-        lead.map((user)=>
-        <div key={currentIndex++}>
-          <Card>
-          <Card.Title>Name : {user?.name}</Card.Title>
-                        <Card.Body>
+    <>
+      <label>Choose a leaderboard type: </label>
+      <select name="board" id="board" onChange={handleSelectChange}>
+        <option value="Individual">Individual</option>
+        <option value="Team">Team</option>
+      </select>
+    
+        <div>
+     {btype=="Individual" ? (
+    lead.map((user, currentIndex) => ( // Ensure to include the currentIndex argument
+      <div key={currentIndex}>
+        <Card>
+          <Card.Title>Name: {user?.name}</Card.Title>
+          <Card.Body>
                             <div className="container customer-profile my-4">
                                 <div className="row mb-2 profile-item">
                                 <div className="col-lg-12">
@@ -61,13 +95,61 @@ export default function Leaderboard() {
                                 </div>
                             </div>
                         </Card.Body>
-                    </Card>
-           <br />
-           </div>
-        )
-     }
-
-
-    </div>
+        </Card>
+        <br />
+      </div>
+    ))
+  ) :(
+    teams.map((team, currentIndex) => ( // Ensure to include the currentIndex argument
+      <div key={currentIndex}>
+        <Card>
+        {/* {
+    "Losses": {
+        "N": "7"
+    },
+    "TeamID": {
+        "S": "TestIntegration"
+    },
+    "TotalPoints": {
+        "N": "0"
+    },
+    "GamesPlayed": {
+        "N": "18"
+    },
+    "Wins": {
+        "N": "11"
+    }
+} */}
+          <Card.Title>Name: {team?.TeamID?.S}</Card.Title>
+          <Card.Body>
+                            <div className="container customer-profile my-4">
+                                <div className="row mb-2 profile-item">
+                                <div className="col-lg-12">
+                                        <h4 className="d-inline">Position : {currentIndex}</h4>
+                                        <hr></hr>
+                                    </div>
+                                    <div className="col-lg-12">
+                                        <h4 className="d-inline">Points : {team?.TotalPoints?.N}</h4>
+                                        <hr></hr>
+                                    </div>
+                                </div>
+                                <div className="row mb-2 profile-item">
+                                    <div className="col-lg-12">
+                                        <h4 className="d-inline">W/L : {team?.Wins?.N} / {team?.Losses?.N}</h4>
+                                        <hr></hr>
+                                    </div>
+                                    <div className="col-lg-12">
+                                        <h4 className="d-inline">Games Played : {team?.GamesPlayed?.N}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card.Body>
+        </Card>
+        <br />
+      </div>
+    ))
+  )}
+</div>
+    </>
   )
 }

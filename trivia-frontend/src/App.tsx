@@ -43,6 +43,7 @@ export const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/team-stats" element={<TeamStats />} />
               <Route path="/manage-team" element={<ManageTeam />} />
+              <Route path='/leaderboard' element={<Leaderboard />} />
             </>
           )}
           <Route path="*" element={<Navigate to="/" />} />
