@@ -9,7 +9,7 @@ import Header from './components/header';
 import { ToastContainer } from 'react-toastify';
 import PlayGamePage from './components/game_experience/gamePage';
 import Temp from './components/game_experience/temp';
-
+import Profile from './components/profile-management/Profile'
 export const App = () => {
   return (
     <Router>
@@ -23,6 +23,7 @@ export const App = () => {
           <Route path='/game-lobby' element={<GameLobby />} />
           <Route path="/playGame" element={<PlayGamePage/>} />
           <Route path="/gaming_experience" element={<Temp/>} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
       <ToastContainer position="bottom-right"
