@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import GameCreatePage from './components/Games/createGame';
 import HomePage from './components/HomePage';
@@ -19,9 +19,35 @@ import SecurityQuestionPage from './components/Authentication/SecurityQuestionPa
 import { selectUser } from './redux/userSlice';
 import TeamStats from './components/Team_management/team_stats';
 import ManageTeam from './components/Team_management/manage_team';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import useWebSocket from 'react-use-websocket';
 
 export const App = () => {
   const isAuth = useSelector(selectUser);
+  const notify = (message: any) => toast.success(message);
+
+  const {
+    sendMessage,
+    sendJsonMessage,
+    lastMessage,
+    lastJsonMessage,
+    readyState,
+    getWebSocket,
+  } = useWebSocket("wss://0rs2czib7e.execute-api.us-east-1.amazonaws.com/production", {
+    onOpen: () => console.log('opened'),
+    shouldReconnect: (closeEvent) => true,
+    onMessage: (event) => {
+      const data = JSON.parse(event.data);
+      if (data.output !== undefined || data.output !== "") {
+        notify(data.output);
+      }
+    }
+  });
+
+  useEffect(() => {
+    sendMessage(JSON.stringify({ "action": "getNotifications" }));
+  })
   return (
     <Router>
       <div className="App">

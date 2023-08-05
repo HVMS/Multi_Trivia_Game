@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { login } from '../../redux/userSlice';
+import { shootNotification } from '../../services/utils';
 
 const SecurityQuestionPage = () => {
   const [email, setEmail] = useState('');
@@ -39,7 +40,7 @@ const SecurityQuestionPage = () => {
   }, []);
 
   // Handle form submission and verify answers
-  const handleFormSubmit = (event: any) => {
+  const handleFormSubmit = async (event: any) => {
     event.preventDefault();
 
     // Compare answers with provided answers
@@ -57,6 +58,7 @@ const SecurityQuestionPage = () => {
         })
       )
       localStorage.setItem('email', email);
+      await shootNotification("PUSH", `Welcome Back, ${email}`);
       navigate('/game-lobby');
     } else {
       alert('Incorrect answers. Please try again.');

@@ -90,7 +90,7 @@ const Login = () => {
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '10px' }}>
-            <Link to="/registration">Register</Link>
+            <Link to="/register">Register</Link>
           </div>
         </form>
       </div>

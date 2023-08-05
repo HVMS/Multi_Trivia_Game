@@ -3,6 +3,7 @@ import axios from 'axios';
 import auth from '../../services/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { shootNotification } from '../../services/utils';
 
 const Registration = () => {
   const [email, setEmail] = useState('');
@@ -40,6 +41,7 @@ const Registration = () => {
       const apiUrl = 'https://ni3yrn85vl.execute-api.us-east-1.amazonaws.com/test'; // Replace with your actual API URL
       await axios.post(apiUrl, userData);
 
+      await shootNotification("EMAIL", `Welcome to Trivia Titans, ${userData.email}!`);
       navigate("/login");
     } catch (error) {
       alert("user regestration fail email already exists");
