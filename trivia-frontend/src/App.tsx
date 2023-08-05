@@ -11,7 +11,8 @@ import PlayGamePage from './components/game_experience/gamePage';
 import Temp from './components/game_experience/temp';
 import Wait from './components/game-lobby/wait';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Profile from './components/profile-management/Profile'
+import Profile from './components/profile-management/Profile';
+import Leaderboard from './components/Leaderboard/Leaderboard';
 
 export const App = () => {
   return (
@@ -28,6 +29,7 @@ export const App = () => {
           <Route path="/gaming_experience" element={<Temp/>} />
           <Route path="/game-lobby/wait" element={<Wait />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
         </Routes>
       </div>
       <ToastContainer position="bottom-right"

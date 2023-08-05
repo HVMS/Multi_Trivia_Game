@@ -17,7 +17,7 @@ const Header = () => {
                             <Nav.Link href="#link" onClick={()=>navigate('/profile')}>Profile</Nav.Link>
                             <NavDropdown title="Game" id="basic-nav-dropdown">
                                 <NavDropdown.Item href="#action/3.1">Game lobby</NavDropdown.Item>
-                                <NavDropdown.Item>
+                                <NavDropdown.Item onClick={()=>navigate('/leaderboard')}>
                                     Leaderboard
                                 </NavDropdown.Item>
                                 <NavDropdown.Item href="#action/3.3">Content</NavDropdown.Item>
