@@ -9,6 +9,7 @@ import {
   Stack
 } from '@chakra-ui/react';
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, query, orderBy } from 'firebase/firestore';
+import { getRemainingTimeInSeconds } from '../../services/utils';
 
 interface GameData {
   game_name: string;
@@ -74,6 +75,29 @@ const Temp = () => {
     }
   });
 
+  const [remainingTime, setRemainingTime] = useState<number | null>(() => {
+    // Check if the remaining time already exists in localStorage
+    const storedTime = localStorage.getItem(TIMER_KEY);
+    return storedTime ? Number(storedTime) : null;
+  });
+
+  // Function to start the countdown for the game time frame
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (remainingTime !== null && remainingTime > 0) {
+        // Decrement the remaining time by 1 second
+        const updatedTime = remainingTime - 1;
+        setRemainingTime(updatedTime);
+        localStorage.setItem(TIMER_KEY, String(updatedTime));
+      }
+    }, 1000);
+
+    // Clear the interval when the component unmounts or remainingTime becomes null
+    return () => {
+      clearInterval(interval);
+    };
+  }, [remainingTime]);
+
   const [data, setData] = useState<string|null>(null);
 
   useEffect(() => {
@@ -92,6 +116,9 @@ const Temp = () => {
             const timeFrame = gameDataFromResponse.gameTimeFrame;
             const parsedTimeFrame = Number(timeFrame.replace(/\D/g, ''));
             setGameTimeFrame(parsedTimeFrame);
+
+            // Start the countdown for the game time frame
+            setRemainingTime(parsedTimeFrame);
           }else{
             console.log("Not found");
           }
@@ -105,6 +132,13 @@ const Temp = () => {
 
     fetchGameTimeFrameResponse();
   }, []);
+
+  // Redirect to the result page once the remainingTime becomes zero
+  useEffect(() => {
+    if (remainingTime === 0) {
+      console.log("Yes it is reached to ZERo!!!");
+    }
+  }, [remainingTime]);
 
   useEffect(() => {
     const userData = localStorage.getItem('persist:root');
@@ -308,10 +342,6 @@ const Temp = () => {
 
   
   const [chatMessage, setChatMessage] = useState<string>('');
-
-  // // State to hold the chat messages from Firestore
-  // const [chatMessages, setChatMessages] = useState<string[]>([]);
-
   const [chatMessages, setChatMessages] = useState<{ userEmail: string; message: string }[]>([]);
 
   useEffect(() => {
@@ -380,7 +410,7 @@ const Temp = () => {
             Team Score: {teamDetails.teamScore}
           </Box>
           <Box position="absolute" top={4} right={4} fontSize="xl">
-            Time Frame: {gameTimeFrame}
+            Time Frame: {remainingTime} seconds
           </Box>
             {currentQuestion ? (
               <Box borderWidth={2} borderRadius="lg" borderColor={isOptionSelected ? (isCorrectAnswer ? 'green' : 'red') : 'black'} p={8}>
