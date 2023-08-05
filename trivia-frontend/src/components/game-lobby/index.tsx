@@ -18,14 +18,20 @@ import {
 } from "@chakra-ui/react";
 import GameLobbyCard from "../ui/GameLobbyCard";
 import React, { useEffect, useRef, useState } from "react";
-import { getData } from "../../services/utils";
+import { getData, postData } from "../../services/utils";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useWebSocket from 'react-use-websocket';
 
 const GameLobby = (props: any) => {
     const [filterData, setFilterData] = useState([] as any);
+    const [userAllTeamDetails, setUserAllTeamDetails] = useState([] as any);
     const notify = (message: any) => toast.success(message);
+    const [selectedTeam, setSelectedTeam] = useState("");
+
+    const handleTeamChange = (e: any) => {
+        setSelectedTeam(e.target.value);
+    }
 
     const filterClickHandler = async (popoverData: any) => {
         fetchGameData(popoverData)
@@ -84,6 +90,24 @@ const GameLobby = (props: any) => {
         sendMessage(JSON.stringify({ "action": "getNotifications" }));
     })
 
+    const getAllUserTeamDetails = async () => {
+        const body = {
+            "email": "kushsutaria.99@gmail.com"
+        }
+        const response = await postData(JSON.stringify(body), "https://k4ru2wkr7a.execute-api.us-east-1.amazonaws.com/prod/fetchTeamNames");
+        if (response?.status == 200) {
+            const list = response?.data.map((elem: any) => {
+                return Object.keys(elem)[0];
+            })
+
+            setUserAllTeamDetails(list);
+        }
+    }
+
+    useEffect(() => {
+        getAllUserTeamDetails();
+    }, [])
+
     return (
         <ChakraProvider>
             <Box>
@@ -94,7 +118,16 @@ const GameLobby = (props: any) => {
                         </Heading>
                     </Box>
                     <Box>
-                        <FilterPopover filterData={filterData} filterClickHandler={filterClickHandler} />
+                        <Flex align="center" justify="space-between" padding="20px">
+                            <Box style={{ marginRight: "60px" }}>
+                                <Select placeholder='Select Team' colorScheme="teal" size="md" onChange={handleTeamChange}>
+                                    {userAllTeamDetails?.map((data: any, idx: any) => {
+                                        return <option key={idx} value={data}>{data}</option>
+                                    })}
+                                </Select>
+                            </Box>
+                            <FilterPopover filterData={filterData} filterClickHandler={filterClickHandler} />
+                        </Flex>
                     </Box>
                 </Flex>
 
@@ -165,7 +198,7 @@ const FilterPopover = (props: any) => {
                                     <Stack spacing={4}>
                                         <Select placeholder='Categories' onChange={handleCategoriesChange}>
                                             {filterData.map((data: any, idx: any) => {
-                                               return <option key={idx} value={data.gameCategory}>{data.gameCategory}</option>
+                                                return <option key={idx} value={data.gameCategory}>{data.gameCategory}</option>
                                             })}
                                         </Select>
                                         <Select placeholder='Difficulty Level' onChange={handleDifficultyLevelChange}>

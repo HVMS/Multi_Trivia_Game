@@ -9,6 +9,9 @@ import Header from './components/header';
 import { ToastContainer } from 'react-toastify';
 import PlayGamePage from './components/game_experience/gamePage';
 import Temp from './components/game_experience/temp';
+import Wait from './components/game-lobby/wait';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Profile from './components/profile-management/Profile'
 import TeamStats from './components/Team_management/team_stats';
 import ManageTeam from './components/Team_management/manage_team';
 
@@ -25,6 +28,8 @@ export const App = () => {
           <Route path='/game-lobby' element={<GameLobby />} />
           <Route path="/playGame" element={<PlayGamePage/>} />
           <Route path="/gaming_experience" element={<Temp/>} />
+          <Route path="/game-lobby/wait" element={<Wait />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/team-stats" element={<TeamStats/>} />
           <Route path="/manage-team" element={<ManageTeam/>} />
         </Routes>

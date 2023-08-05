@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Heading, Text,  List,  ListItem, Flex, Spacer, VStack} from "@chakra-ui/react";
 import './css/teamStats.css'
 
 
@@ -204,7 +203,6 @@ function TeamStats() {
         alert('Error');
       });
 
-    // TODO: Implement leaving the team
   };
 
   function selectTeam(teamName: string): void {
@@ -232,24 +230,10 @@ confirm('Are you sure you want to leave this team?') && handleLeaveTeam(user);
         </p>
         <p>Total Points Earned: {totalPoints}</p>
       </div>
-  
-      <div className="testing-purpose">
-        <h3>
-          ------------- Testing purpose -------------
-        </h3>
-        <div>
-          <button onClick={handleAddGame}>Add Game</button>
-          <button onClick={handleAddWin}>Add Win</button>
-          <button onClick={handleAddLoss}>Add Loss</button>
-          <button onClick={() => handleAddPoints(10)}>Add Points</button>
-        </div>
-        <h3>
-          ------------- Testing purpose -------------
-        </h3>
-      </div>
-  
+      <div className='white-line'> </div>
+        
       <h2>
-        My Team
+        My Teams
       </h2>
       <ul>
         {teams.map((team, index) => (

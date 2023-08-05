@@ -25,8 +25,7 @@ const createTeam = () => {
     }
     
 
-    const handleSubmit = (e:any) => {
-        e.preventDefault();
+    const handleSubmit = () => {
         console.log(teamName);
         console.log(user);
         var values = {
@@ -63,10 +62,9 @@ const createTeam = () => {
                     onSubmit={handleSubmit}
                 >
                     <Form>
-                        <label>Generate Name</label>
                         <button onClick={()=>generateTeamName()}>Generate Team Name</button>
-                        <p>{teamName}</p>
-                        <label htmlFor="Team">Team Name</label>
+                        <br/>
+                        <br/>
                         <Field
                             id="Team"
                             name="Team"
