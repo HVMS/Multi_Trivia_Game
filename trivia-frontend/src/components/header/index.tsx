@@ -15,6 +15,7 @@ const Header = () => {
         localStorage.removeItem('email');
     }
     return (
+
         <Navbar data-bs-theme="dark" sticky='top' style={{ backgroundColor: "teal" }}>
             <Container>
                 <Navbar.Brand href="#home">Trivia Titans</Navbar.Brand>
@@ -25,7 +26,7 @@ const Header = () => {
                         <Nav.Link href="#link" onClick={() => navigate('/profile')}>Profile</Nav.Link>
                         <NavDropdown title="Game" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/game-lobby">Game lobby</NavDropdown.Item>
-                            <NavDropdown.Item>
+                            <NavDropdown.Item onClick={()=>navigate('/leaderboard')}>
                                 Leaderboard
                             </NavDropdown.Item>
                             <NavDropdown.Item href="#action/3.3">Content</NavDropdown.Item>

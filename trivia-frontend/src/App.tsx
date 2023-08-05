@@ -19,6 +19,7 @@ import SecurityQuestionPage from './components/Authentication/SecurityQuestionPa
 import { selectUser } from './redux/userSlice';
 import TeamStats from './components/Team_management/team_stats';
 import ManageTeam from './components/Team_management/manage_team';
+import Leaderboard from './components/Leaderboard/Leaderboard';
 
 export const App = () => {
   const isAuth = useSelector(selectUser);
