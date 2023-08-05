@@ -1,0 +1,132 @@
+/* teamStats.css */
+
+.team-stats {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .team-stats h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .team-stats h3 {
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .team-stats .testing-purpose {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+    margin-top: 20px;
+  }
+  
+  .team-stats .testing-purpose button {
+    margin-right: 10px;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .team-stats .testing-purpose button:hover {
+    background-color: #0056b3;
+  }
+  
+  .team-stats .my-team h2 {
+    font-size: 24px;
+  }
+  
+  .team-stats .my-team button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .team-stats .my-team button:hover {
+    background-color: #45a049;
+  }
+  
+  .team-stats .team-members h2 {
+    font-size: 24px;
+  }
+  
+  .team-stats .team-members li {
+    display: flex;
+    align-items: center;
+    max-width: fit-content;
+  }
+  
+  .team-stats .team-members button {
+    margin-left: 10px;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .team-stats .team-members button:hover {
+    background-color: #0056b3;
+  }
+  
+  .team-stats .leave-team button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .team-stats .leave-team button:hover {
+    background-color: #b02a37;
+  }
+
+  
+  /* teamStats.css */
+
+/* ... Previous CSS rules ... */
+
+.team-members-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .team-members-table th, .team-members-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .team-members-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
+  .team-members-table button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .team-members-table button:hover {
+    background-color: #0056b3;
+  }
+  

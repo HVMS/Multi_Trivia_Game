@@ -1,30 +1,57 @@
-import React from "react";
 import { Formik, Form, Field } from 'formik';
-import { useState } from "react";
-var AWS = require("aws-sdk");
+import { useState, useEffect } from "react";
+import './css/inviteTeam.css'
 
-AWS.config.update({
-    region: 'us-east-1',
-    credentials: new AWS.Credentials({
-        accessKeyId: "ASIA3EMVPIHUMJ7JMHUP",
-        secretAccessKey: "zPMqiUJt8sx15HcT9I66dgBO70cIeRX98kkervl9",
-        sessionToken: "FwoGZXIvYXdzEFwaDH2nrWvV0ScGtOnHZSLAAXYbtIORoJOXmt0DdmeX52fLQOGdtcXcUcarfuzeNqd+WiDORL9jeGsKtPUf0kymzAHwiWKG82ifFOxnvptZ+AqKU326B5iuhwe6Qjc56hyS0H1cv19qYuz9zEgg8ZeWxXj0YiKBlnKfQTAWGL/Qp4kDSXSZ8wr3uvIwCs6oLzeQLGb2L82L76aclsuWbyGcBbzJ81f3kkk9d4YBCMmF/tNveqvYEhVNETknvAEbLJLprz//dZMUZkiaUpTcKQ/ftij1gaemBjItGY4qsxzqzKt66Vwuk7+HcwX43D1QtY0GhrbP8cfgZSSTLemfLv5FueJwrH3l",
-    }),
-  });
+interface Team {
+    teamName: string;
+  }
 
 const InvitePlayer = () => {
-    const [teamName, setTeamName] = useState('');
     const [memberEmail, setmemberEmail] = useState('');
+    const [selectedTeam, setSelectedTeam] = useState('');
+    const [teams, setTeams] = useState<Team[]>([]);
+
+    const user = localStorage.getItem('email');
+
+    useEffect(() => {
+        fetchTeamNames(user);
+    }, []);
+
+    const fetchTeamNames = async (user: string | null) => {
+        console.log(user);
+        fetch('https://k4ru2wkr7a.execute-api.us-east-1.amazonaws.com/prod/fetchTeamNames', {
+          method: 'POST',
+          body: JSON.stringify({
+            'email': user,
+          }),
+        }).then((response) => {
+          return response.json();
+        })
+          .then((data) => {
+            console.log(data);
+            if (data.length > 0) {
+              setTeams(data);
+            }
+          }).catch((error) => {
+            console.error('Error:', error);
+          });
+      };
+
+    const selectTeam = (team: string) => {
+        console.log(team);
+        setSelectedTeam(team);
+    };
 
     const invitePlayers = () => {
         console.log(memberEmail);
-        console.log(teamName);
+        console.log(selectedTeam);
+
         var values = {
             "mails": [
               memberEmail
             ],
-            "team": teamName,
-            "sender": "Admin",//TODO: get this from the user
+            "team": selectedTeam,
+            "sender": user,
             "acceptLink": "https://serverless-pubsub-invite-form.s3.amazonaws.com/formInput.html"
           };
 
@@ -54,7 +81,7 @@ const InvitePlayer = () => {
     
 
 return (
-    <div>
+    <div className='invite-player-form'>
         <h1>Invite Members</h1>
         <div>
         <Formik
@@ -72,16 +99,29 @@ return (
                     />
                     <label htmlFor="Team">Team Name</label>
                     <Field
-                        id="Team"
-                        name="Team"
-                        placeholder="Team Name"
-                        value={teamName}
-                        onChange={(e: any) => setTeamName(e.target.value)}
-                    />
+              as="select"
+              id="teamList"
+              name="teamList"
+              onChange={(e: any) => selectTeam(e.target.value)}
+            >
+            {teams.map((team: Team, index: number) => (
+            <option key={index}  >
+                {Object.values(team)[0]}
+            </option>
+            ))}
+            <option value="">Select a team</option>
+            </Field>
                     <button type="submit">Submit</button>
+
                 </Form>
+                
             </Formik>
+            
         </div>
+        <br/>
+
+        <button onClick={()=>window.location.href = '/team-stats'} style={{background:'grey'}}>Check Team Stats</button>
+
     </div>
 );
 };

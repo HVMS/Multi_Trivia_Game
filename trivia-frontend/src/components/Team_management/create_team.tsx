@@ -1,24 +1,40 @@
-import React from "react";
 import { Formik, Form, Field } from 'formik';
 import { useState } from "react";
+import './css/createTeam.css'
+import { Configuration, OpenAIApi } from "openai";
 
 const createTeam = () => {
-    const [teamName, setTeamName] = useState('');
-    const [user1, setUser1] = useState('');
+    const [teamName, setTeamName] = useState<any>('');
 
+    const user = localStorage.getItem('email');
+    
+    async function generateTeamName() {
+      const configuration = new Configuration({
+        apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+      });
+      const openai = new OpenAIApi(configuration);
+      
+      const response = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: "Generate a unique team name of 15 characters or less for a quiz game like kahoot, last 4 characters are numbers. Space is allowed. The first 11 characters should be meaningful",
+        max_tokens: 15,
+        temperature: 0.5,
+      });
+      console.log(response.data.choices[0].text);
+        setTeamName(response.data.choices[0].text);
+    }
+    
 
-    const handleSubmit = () => {
+    const handleSubmit = (e:any) => {
+        e.preventDefault();
         console.log(teamName);
-        console.log(user1);
+        console.log(user);
         var values = {
             "Team": teamName,
-            "user1": user1,
+            "user1": user,
         };
         fetch('https://67u4ndnjaf.execute-api.us-east-1.amazonaws.com/prod/create-team', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify(values),
         })
             .then((response) => response.json())
@@ -39,7 +55,7 @@ const createTeam = () => {
     };
 
     return (
-        <div>
+        <div className='create-team-form'>
             <h1>Create Team</h1>
             <div>
             <Formik
@@ -47,14 +63,9 @@ const createTeam = () => {
                     onSubmit={handleSubmit}
                 >
                     <Form>
-                        <label htmlFor="email">Email</label>
-                        <Field
-                            id="user1"
-                            name="user1"
-                            placeholder="email"
-                            value={user1}
-                            onChange={(e: any) => setUser1(e.target.value)}
-                        />
+                        <label>Generate Name</label>
+                        <button onClick={()=>generateTeamName()}>Generate Team Name</button>
+                        <p>{teamName}</p>
                         <label htmlFor="Team">Team Name</label>
                         <Field
                             id="Team"
@@ -63,6 +74,7 @@ const createTeam = () => {
                             value={teamName}
                             onChange={(e: any) => setTeamName(e.target.value)}
                         />
+
                         <button type="submit">Submit</button>
                     </Form>
                 </Formik>

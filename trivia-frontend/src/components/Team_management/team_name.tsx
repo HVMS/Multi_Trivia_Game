@@ -1,27 +1,27 @@
 import React, { useState } from 'react';
 import { Configuration, OpenAIApi } from "openai";
-//require('dotenv').config();
 
 function TeamNameGenerator() {
   const [teamName, setTeamName] = useState('');
 
 
-    const generateTeamName = async () => {
-      console.log("-------");
 
-      const configuration = new Configuration({
-        organization: "org-genYHs6tBwtmKmy5LFle9HpW ",
-        apiKey: "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",
-      });
-      console.log("-------");
+async function generateTeamName() {
+  const configuration = new Configuration({
+    apiKey: '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',
+  });
+  const openai = new OpenAIApi(configuration);
+  
+  const response = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt: "Generate a unique team name of 15 characters or less for a quiz game like kahoot, last 4 characters are numbers. Space is allowed. The first 11 characters should be meaningful",
+    max_tokens: 15,
+    temperature: 0.5,
+  });
+  console.log(response); 
 
-      const openai = new OpenAIApi(configuration);
-      console.log(openai);
-      const response=await openai.listEngines();
-      console.log(response.data)
-      console.log("-------");
-    
-  };
+}
+
 
   return (
     <div>

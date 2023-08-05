@@ -5,13 +5,24 @@ import TeamStatsGenerator from './components/Team_management/team_stats';
 import InvitePlayer from './components/Team_management/invite_player';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
+import { Provider } from "react-redux";
+import { store } from "./store/store";
+import { PersistGate } from "redux-persist/integration/react";
+import {
+  persistStore
+} from "redux-persist";
+import { App } from './App';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <TeamStatsGenerator/>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistStore(store)}>
+        <App />
+      </PersistGate>
+    </Provider>
   </React.StrictMode>
 );
 
