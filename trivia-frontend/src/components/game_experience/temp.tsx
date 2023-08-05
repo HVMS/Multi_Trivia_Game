@@ -354,23 +354,24 @@ const Temp = () => {
         console.log("Questions:", questions);
         setQuestions(questions);
 
-        // const questionCategories = await Promise.all(
-        //   questions.map(async (question: Question) => {
-        //     const response = await fetch(
-        //       'https://us-central1-serverless-project-nl-api.cloudfunctions.net/function-2',
-        //       {
-        //         method: 'POST',
-        //         body: JSON.stringify({ current_question: question.question_name }),
-        //       }
-        //     );
-        //     const categoryData = await response.json();
-        //     console.log("Each question tag is : ",categoryData);
-        //     return categoryData.highestConfidenceCategory;
-        //   })
-        // );
-
-        // setCurrentQuestionCategory(questionCategories[currentQuestionIndex]);
-      
+        const questionCategories = await Promise.all(
+          questions.map(async (question: Question) => {
+            const response = await fetch(
+              'https://us-central1-serverless-project-nl-api.cloudfunctions.net/function-2',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'text': question.question_name }),
+              }
+            );
+            const categoryData = await response.json();
+            console.log("Each question tag is : ",categoryData);
+            return categoryData.highestConfidenceCategory;
+          })
+        );
+        setCurrentQuestionCategory(questionCategories[currentQuestionIndex]);
       }
 
     } catch (error) {
