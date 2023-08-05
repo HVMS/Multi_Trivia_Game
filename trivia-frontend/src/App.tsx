@@ -17,6 +17,8 @@ import Registration from './components/Authentication/RegestrationPage';
 import { useSelector } from "react-redux";
 import SecurityQuestionPage from './components/Authentication/SecurityQuestionPage';
 import { selectUser } from './redux/userSlice';
+import TeamStats from './components/Team_management/team_stats';
+import ManageTeam from './components/Team_management/manage_team';
 
 export const App = () => {
   const isAuth = useSelector(selectUser);
@@ -25,9 +27,9 @@ export const App = () => {
       <div className="App">
         {isAuth && (<Header />)}
         <Routes>
-          <Route path="/" element={isAuth ? <Navigate to="/game-lobby" /> : <Login />}/>
+          <Route path="/" element={isAuth ? <Navigate to="/game-lobby" /> : <Login />} />
           <Route path="/register" element={isAuth ? <Navigate to="/game-lobby" /> : <Registration />} />
-          <Route path="/security-questions" element={isAuth ? <Navigate to="/game-lobby" /> : <SecurityQuestionPage />}/>
+          <Route path="/security-questions" element={isAuth ? <Navigate to="/game-lobby" /> : <SecurityQuestionPage />} />
           {isAuth && (
             <>
               <Route path="/questions" element={<QuestionBase />} />
@@ -38,6 +40,8 @@ export const App = () => {
               <Route path="/gaming_experience" element={<Temp />} />
               <Route path="/game-lobby/wait" element={<Wait />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/team-stats" element={<TeamStats />} />
+              <Route path="/manage-team" element={<ManageTeam />} />
             </>
           )}
           <Route path="*" element={<Navigate to="/" />} />

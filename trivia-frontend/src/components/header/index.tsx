@@ -32,7 +32,7 @@ const Header = () => {
                             <NavDropdown.Divider />
                             <NavDropdown.Item href="#action/3.4">
                                 Virtual Assistant
-                            </NavDropdown.Item>                            
+                            </NavDropdown.Item>
                         </NavDropdown>
                         <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
                     </Nav>
