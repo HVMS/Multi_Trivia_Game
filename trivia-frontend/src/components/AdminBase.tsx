@@ -17,7 +17,7 @@ interface Game {
 // Define game categories, difficulty levels, and time frames
 const categories = ["science", "cricket", "music", "sports", "history"];
 const difficultyLevels = ["Easy", "Medium", "Hard"];
-const timeFrames = ["60 seconds", "90 seconds", "120 seconds"];
+const timeFrames = ["120 seconds", "180 seconds", "240 seconds"];
 
 const AdminBase = () => {
 
