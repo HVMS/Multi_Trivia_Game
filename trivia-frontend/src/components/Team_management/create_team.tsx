@@ -11,7 +11,7 @@ const createTeam = () => {
     async function generateTeamName(e:any) {
         e.preventDefault();
       const configuration = new Configuration({
-        apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+        apiKey: "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",
       });
       const openai = new OpenAIApi(configuration);
       
