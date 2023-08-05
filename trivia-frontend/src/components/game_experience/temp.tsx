@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Box, Button, Card, Center, ChakraProvider, Heading, Text, useToast } from '@chakra-ui/react';
 import { useLocation, useNavigate } from 'react-router-dom'; // Import useHistory hook
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import {
+  Input,
+  InputGroup,
+  InputRightElement,
+  Stack
+} from '@chakra-ui/react';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, query, orderBy } from 'firebase/firestore';
 
 interface GameData {
   game_name: string;
@@ -300,6 +306,62 @@ const Temp = () => {
     });
   };
 
+  
+  const [chatMessage, setChatMessage] = useState<string>('');
+
+  // State to hold the chat messages from Firestore
+  const [chatMessages, setChatMessages] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Initialize Firebase
+    initializeApp(firebaseConfig);
+
+    // Fetch and subscribe to the chat messages in Firestore
+    const firestore = getFirestore();
+    const gameChatCollectionRef = collection(firestore, 'mychat', gameNameFromState, 'chatMessages');
+
+    // Create a query to order the messages by their timestamp
+    const chatQuery = query(gameChatCollectionRef, orderBy('timestamp'));
+
+    // Subscribe to changes in the chat messages
+    const unsubscribe = onSnapshot(chatQuery, (querySnapshot) => {
+      const messages: string[] = [];
+      querySnapshot.forEach((doc) => {
+        const message = doc.data().message;
+        messages.push(message);
+      });
+
+      // Update the chat messages state with real-time data
+      setChatMessages(messages);
+    });
+
+    // Cleanup the subscription when the component unmounts
+    return () => {
+      unsubscribe();
+    };
+  }, [gameNameFromState]);
+
+  // Function to send a chat message
+  const sendChatMessage = async () => {
+    if (chatMessage.trim() !== '') {
+      try {
+        const firestore = getFirestore();
+        const gameChatCollectionRef = collection(firestore, 'mychat', gameNameFromState, 'chatMessages');
+
+        // Create a new chat message document in Firestore
+        await addDoc(gameChatCollectionRef, {
+          message: chatMessage,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Clear the chat input field after sending the message
+        setChatMessage('');
+      } catch (error) {
+        console.error('Error sending chat message:', error);
+      }
+    }
+  };
+
   return (
     <ChakraProvider>
       <Center h="100vh">
@@ -355,6 +417,31 @@ const Temp = () => {
             </Button>
           )}
         </Box>
+          {/* Chat Box */}
+          <Box borderWidth={2} borderRadius="lg" borderColor="black" p={8} mt={8}>
+            <Heading mb={4}>Chat Box</Heading>
+              <Box maxHeight="200px" overflowY="auto">
+                {chatMessages.map((message, index) => (
+                  <Card key={index} p={2} mb={2} borderWidth={1}>
+                    <Text fontSize="md">{message}</Text>
+                  </Card>
+                ))}
+              </Box>
+            <Stack direction="row" mt={4}>
+              <InputGroup>
+                <Input
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  placeholder="Type your message here"
+                />
+                <InputRightElement width="4.5rem">
+                  <Button h="1.75rem" size="sm" onClick={sendChatMessage}>
+                    Send
+                  </Button>
+                </InputRightElement>
+              </InputGroup>
+            </Stack>
+          </Box>
       </Center>
     </ChakraProvider>
   );
