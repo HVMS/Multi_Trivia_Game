@@ -14,6 +14,7 @@ import {
 import { toast as TOAST } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useWebSocket from 'react-use-websocket';
+import auth from '../../services/firebase';
 import { getFirestore, doc, updateDoc, query, orderBy, setDoc, addDoc, getDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
 
 interface Question {
@@ -38,6 +39,8 @@ const firebaseConfig1 = {
   appId: "1:248193786486:web:28b88f1458d87328177557",
   measurementId: "G-8G72EE3EJN"
 };
+
+auth.signOut();
 
 initializeApp(firebaseConfig1, "mydb");
 
@@ -327,63 +330,8 @@ useEffect(() => {
       duration: 5000,
       isClosable: true,
     });
-  };
 
-  const [chatMessage, setChatMessage] = useState<string>('');
-
-  const [chatMessages, setChatMessages] = useState<{ userEmail: string; message: string }[]>([]);
-
-  useEffect(() => {
-
-    // Fetch and subscribe to the chat messages in Firestore
-    const firestore = getFirestore();
-    const gameChatCollectionRef = collection(firestore, 'mychat', gameNameFromState, 'chatMessages');
-
-    // Create a query to order the messages by their timestamp
-    const chatQuery = query(gameChatCollectionRef, orderBy('timestamp'));
-
-    // Subscribe to changes in the chat messages
-    const unsubscribe = onSnapshot(chatQuery, (querySnapshot) => {
-      const messages: { userEmail: string; message: string }[] = [];
-      querySnapshot.forEach((doc) => {
-        const messageData = doc.data();
-        messages.push({ userEmail: messageData.userEmail, message: messageData.message });
-      });
-    
-      // Update the chat messages state with real-time data
-      setChatMessages(messages);
-    });
-
-    // Cleanup the subscription when the component unmounts
-    return () => {
-      unsubscribe();
-    };
-  }, [gameNameFromState]);
-
-  // Function to send a chat message
-  const sendChatMessage = async () => {
-    if (chatMessage.trim() !== '') {
-      try {
-        const firestore = getFirestore();
-        const gameChatCollectionRef = collection(firestore, 'mychat', gameNameFromState, 'chatMessages');
-
-        // Get the user's email from the parsed data
-        console.log("email id is : ",userEmailId);
-        const userEmail = userEmailId;
-
-        // Create a new chat message document in Firestore
-        await addDoc(gameChatCollectionRef, {
-          userEmail: userEmail,
-          message: chatMessage,
-          timestamp: new Date().toISOString(),
-        });
-
-        // Clear the chat input field after sending the message
-        setChatMessage('');
-      } catch (error) {
-        console.error('Error sending chat message:', error);
-      }
-    }
+    navigate('/leaderboard');
   };
 
   return (
@@ -441,33 +389,6 @@ useEffect(() => {
             </Button>
           )}
         </Box>
-        <Box maxW="xl">
-            <Box borderWidth={2} borderRadius="lg" borderColor="black" p={8} mt={8}>
-              <Heading mb={4}>Chat Box</Heading>
-                <Box maxWidth="450px" maxHeight="350px" overflowY="auto">
-                  {chatMessages.map((messageData, index) => (
-                    <Card key={index} p={2} mb={2} borderWidth={1}>
-                      {/* <Text fontSize="md">{message}</Text> */}
-                      <Text fontSize="md">{`${messageData.userEmail}: ${messageData.message}`}</Text>
-                    </Card>
-                  ))}
-                </Box>
-              <Stack direction="row" mt={4}>
-                <InputGroup>
-                  <Input
-                    value={chatMessage}
-                    onChange={(e) => setChatMessage(e.target.value)}
-                    placeholder="Type your message here"
-                  />
-                  <InputRightElement width="4.5rem">
-                    <Button h="1.75rem" size="sm" onClick={sendChatMessage}>
-                      Send
-                    </Button>
-                  </InputRightElement>
-                </InputGroup>
-              </Stack>
-            </Box>
-          </Box>
       </Center>
     </ChakraProvider>
   );
