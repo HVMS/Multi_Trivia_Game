@@ -56,13 +56,15 @@ const Temp = () => {
   console.log(typeof teamNameFromState);
 
   // Making a temp list of users
-  const teamMembersList : string[] = [
-    'test1@gmail.com',
-    'test2@gmail.com',
-  ];
+  // const teamMembersList : string[] = [
+  //   'test1@gmail.com',
+  //   'test2@gmail.com',
+  // ];
 
   const toast = useToast();
   const navigate = useNavigate();
+
+  const [currentQuestionCategory, setCurrentQuestionCategory] = useState<string | null>(null);
 
   // Initialize the gameTimeFrame state using localStorage or fetch from API
   const [gameTimeFrame, setGameTimeFrame] = useState<number | null>(() => {
@@ -100,6 +102,8 @@ const Temp = () => {
 
   const [data, setData] = useState<string|null>(null);
 
+  const [teamMembers, setTeamMembers] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchGameTimeFrameResponse = async () => {
       try {
@@ -131,31 +135,6 @@ const Temp = () => {
     };
 
     fetchGameTimeFrameResponse();
-  }, []);
-
-  // Redirect to the result page once the remainingTime becomes zero
-  useEffect(() => {
-    if (remainingTime === 0) {
-      console.log("Yes it is reached to ZERo!!!");
-    }
-  }, [remainingTime]);
-
-  useEffect(() => {
-    const userData = localStorage.getItem('persist:root');
-    if (userData) {
-      const parsedData = JSON.parse(userData);
-      console.log(parsedData['user']);
-
-      const userEmailId = parsedData['user'];
-      if (teamMembersList.includes(userEmailId)){
-        setData(userEmailId);
-        console.log("user is present : ",userEmailId);
-      }else{
-        console.log("not logged in yet");
-      }
-    }else{
-      console.log("wrong data");
-    }
   }, []);
 
   // State to track if data has been fetched from Firestore
@@ -209,7 +188,70 @@ const Temp = () => {
   useEffect(() => {
     initializeApp(firebaseConfig);
     fetchData();
+    fetchTeamMembersFromDynamoDB(teamNameFromState);
   }, []);
+
+  const fetchTeamMembersFromDynamoDB = async (teamName: string | undefined) => {
+
+    console.log(teamName);
+
+    fetch('https://k4ru2wkr7a.execute-api.us-east-1.amazonaws.com/prod/fetchteammembers', {
+
+      method: 'POST',
+
+      body: JSON.stringify({
+
+        'team': teamName,
+
+      }),
+
+    }).then((response) => {
+
+      return response.json();
+
+    })
+
+      .then((data) => {
+
+        console.log(data);
+
+        if (data.length > 0) {
+
+          setTeamMembers(data);
+
+          console.log("members are ... ", data);
+
+          const userData = localStorage.getItem('persist:root');
+          if (userData) {
+            const parsedData = JSON.parse(userData);
+            console.log(parsedData['user']);
+
+            const userEmailId= parsedData['user'];
+            if (teamMembers.includes(userEmailId)){
+              console.log("Yes it is logged in", userEmailId);
+            }
+            console.log("Email id is : ",userEmailId);
+
+          }else{
+            console.log("wrong data");
+          }
+
+        }
+
+      }).catch((error) => {
+
+        console.error('Error:', error);
+
+      });
+
+  }
+
+  // Redirect to the result page once the remainingTime becomes zero
+  useEffect(() => {
+    if (remainingTime === 0) {
+      console.log("Yes it is reached to ZERo!!!");
+    }
+  }, [remainingTime]);
 
   const currentQuestion = questions[currentQuestionIndex];
   const isOptionSelected = selectedOption !== null;
@@ -311,6 +353,24 @@ const Temp = () => {
 
         console.log("Questions:", questions);
         setQuestions(questions);
+
+        // const questionCategories = await Promise.all(
+        //   questions.map(async (question: Question) => {
+        //     const response = await fetch(
+        //       'https://us-central1-serverless-project-nl-api.cloudfunctions.net/function-2',
+        //       {
+        //         method: 'POST',
+        //         body: JSON.stringify({ current_question: question.question_name }),
+        //       }
+        //     );
+        //     const categoryData = await response.json();
+        //     console.log("Each question tag is : ",categoryData);
+        //     return categoryData.highestConfidenceCategory;
+        //   })
+        // );
+
+        // setCurrentQuestionCategory(questionCategories[currentQuestionIndex]);
+      
       }
 
     } catch (error) {
@@ -412,6 +472,11 @@ const Temp = () => {
           <Box position="absolute" top={4} right={4} fontSize="xl">
             Time Frame: {remainingTime} seconds
           </Box>
+          {currentQuestionCategory && (
+              <Box position="absolute" top={180} right={4} fontSize="xl">
+                Question Category: {currentQuestionCategory}
+              </Box>
+            )}
             {currentQuestion ? (
               <Box borderWidth={2} borderRadius="lg" borderColor={isOptionSelected ? (isCorrectAnswer ? 'green' : 'red') : 'black'} p={8}>
                 <Heading mb={4}>Question {currentQuestionIndex + 1}</Heading>
