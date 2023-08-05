@@ -75,7 +75,7 @@ export const App = () => {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
-      <ToastContainer position="bottom-right"
+      <ToastContainer position="bottom-left"
         autoClose={5000}
         hideProgressBar={false}
         newestOnTop={false}
