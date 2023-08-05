@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Card, Center, ChakraProvider, Heading, Text, useToast } from '@chakra-ui/react';
+import { Box, Button, Card, Center, ChakraProvider, Heading, Text, useToast, HStack } from '@chakra-ui/react';
 import { useLocation, useNavigate } from 'react-router-dom'; // Import useHistory hook
 import { initializeApp } from 'firebase/app';
 import {
@@ -309,8 +309,10 @@ const Temp = () => {
   
   const [chatMessage, setChatMessage] = useState<string>('');
 
-  // State to hold the chat messages from Firestore
-  const [chatMessages, setChatMessages] = useState<string[]>([]);
+  // // State to hold the chat messages from Firestore
+  // const [chatMessages, setChatMessages] = useState<string[]>([]);
+
+  const [chatMessages, setChatMessages] = useState<{ userEmail: string; message: string }[]>([]);
 
   useEffect(() => {
     // Initialize Firebase
@@ -325,12 +327,12 @@ const Temp = () => {
 
     // Subscribe to changes in the chat messages
     const unsubscribe = onSnapshot(chatQuery, (querySnapshot) => {
-      const messages: string[] = [];
+      const messages: { userEmail: string; message: string }[] = [];
       querySnapshot.forEach((doc) => {
-        const message = doc.data().message;
-        messages.push(message);
+        const messageData = doc.data();
+        messages.push({ userEmail: messageData.userEmail, message: messageData.message });
       });
-
+    
       // Update the chat messages state with real-time data
       setChatMessages(messages);
     });
@@ -348,8 +350,12 @@ const Temp = () => {
         const firestore = getFirestore();
         const gameChatCollectionRef = collection(firestore, 'mychat', gameNameFromState, 'chatMessages');
 
+        // Get the user's email from the parsed data
+        const userEmail = data;
+
         // Create a new chat message document in Firestore
         await addDoc(gameChatCollectionRef, {
+          userEmail: userEmail,
           message: chatMessage,
           timestamp: new Date().toISOString(),
         });
@@ -365,6 +371,7 @@ const Temp = () => {
   return (
     <ChakraProvider>
       <Center h="100vh">
+        <HStack spacing={4}>
         <Box maxW="xl">
           <Box position="absolute" top={80} left={4} fontSize="xl">
             Current Score: {userScore}
@@ -375,73 +382,77 @@ const Temp = () => {
           <Box position="absolute" top={4} right={4} fontSize="xl">
             Time Frame: {gameTimeFrame}
           </Box>
-          {currentQuestion ? (
-            <Box borderWidth={2} borderRadius="lg" borderColor={isOptionSelected ? (isCorrectAnswer ? 'green' : 'red') : 'black'} p={8}>
-              <Heading mb={4}>Question {currentQuestionIndex + 1}</Heading>
-              <Text fontSize="xl" mb={4}>
-                {currentQuestion.question_name}
-              </Text>
-              {currentQuestion.question_options.L.map((option, index) => (
-                <Card
-                  key={index}
-                  onClick={() => handleOptionClick(index)}
-                  bg={
-                    optionsDisabled
-                      ? option.S === currentQuestion.question_right_answer
-                        ? 'green'
-                        : selectedOption === index
-                        ? 'red'
+            {currentQuestion ? (
+              <Box borderWidth={2} borderRadius="lg" borderColor={isOptionSelected ? (isCorrectAnswer ? 'green' : 'red') : 'black'} p={8}>
+                <Heading mb={4}>Question {currentQuestionIndex + 1}</Heading>
+                <Text fontSize="xl" mb={4}>
+                  {currentQuestion.question_name}
+                </Text>
+                {currentQuestion.question_options.L.map((option, index) => (
+                  <Card
+                    key={index}
+                    onClick={() => handleOptionClick(index)}
+                    bg={
+                      optionsDisabled
+                        ? option.S === currentQuestion.question_right_answer
+                          ? 'green'
+                          : selectedOption === index
+                          ? 'red'
+                          : 'inherit'
                         : 'inherit'
-                      : 'inherit'
-                  }
-                  p={4}
-                  borderRadius="md"
-                  cursor={optionsDisabled ? 'not-allowed' : 'pointer'}
-                  mb={2}
-                >
-                  <Text fontSize="lg">{option.S}</Text>
-                </Card>
-              ))}
-            </Box>
-          ) : (
-            <Text fontSize="xl">Loading questions...</Text>
-          )}
-          {!isLastQuestionDisplayed && (
-            <Button onClick={handleNextClick} mt={4} colorScheme="blue" isDisabled={!isOptionSelected}>
-              Next
-            </Button>
-          )}
-          {isLastQuestionDisplayed && (
-            <Button onClick={handleFinishClick} mt={4} colorScheme="green" isDisabled={!isOptionSelected}>
-              Finish
-            </Button>
-          )}
-        </Box>
-          {/* Chat Box */}
-          <Box borderWidth={2} borderRadius="lg" borderColor="black" p={8} mt={8}>
-            <Heading mb={4}>Chat Box</Heading>
-              <Box maxHeight="200px" overflowY="auto">
-                {chatMessages.map((message, index) => (
-                  <Card key={index} p={2} mb={2} borderWidth={1}>
-                    <Text fontSize="md">{message}</Text>
+                    }
+                    p={4}
+                    borderRadius="md"
+                    cursor={optionsDisabled ? 'not-allowed' : 'pointer'}
+                    mb={2}
+                  >
+                    <Text fontSize="lg">{option.S}</Text>
                   </Card>
                 ))}
               </Box>
-            <Stack direction="row" mt={4}>
-              <InputGroup>
-                <Input
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  placeholder="Type your message here"
-                />
-                <InputRightElement width="4.5rem">
-                  <Button h="1.75rem" size="sm" onClick={sendChatMessage}>
-                    Send
-                  </Button>
-                </InputRightElement>
-              </InputGroup>
-            </Stack>
+            ) : (
+              <Text fontSize="xl">Loading questions...</Text>
+            )}
+            {!isLastQuestionDisplayed && (
+              <Button onClick={handleNextClick} mt={4} colorScheme="blue" isDisabled={!isOptionSelected}>
+                Next
+              </Button>
+            )}
+            {isLastQuestionDisplayed && (
+              <Button onClick={handleFinishClick} mt={4} colorScheme="green" isDisabled={!isOptionSelected}>
+                Finish
+              </Button>
+            )}
           </Box>
+            {/* Chat Box */}
+          <Box maxW="xl">
+            <Box borderWidth={2} borderRadius="lg" borderColor="black" p={8} mt={8}>
+              <Heading mb={4}>Chat Box</Heading>
+                <Box maxWidth="450px" maxHeight="350px" overflowY="auto">
+                  {chatMessages.map((messageData, index) => (
+                    <Card key={index} p={2} mb={2} borderWidth={1}>
+                      {/* <Text fontSize="md">{message}</Text> */}
+                      <Text fontSize="md">{`${messageData.userEmail}: ${messageData.message}`}</Text>
+                    </Card>
+                  ))}
+                </Box>
+              <Stack direction="row" mt={4}>
+                <InputGroup>
+                  <Input
+                    value={chatMessage}
+                    onChange={(e) => setChatMessage(e.target.value)}
+                    placeholder="Type your message here"
+                  />
+                  <InputRightElement width="4.5rem">
+                    <Button h="1.75rem" size="sm" onClick={sendChatMessage}>
+                      Send
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
+              </Stack>
+            </Box>
+          </Box>
+          </HStack>
       </Center>
     </ChakraProvider>
   );
