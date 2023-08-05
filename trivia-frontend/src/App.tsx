@@ -22,6 +22,7 @@ import ManageTeam from './components/Team_management/manage_team';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useWebSocket from 'react-use-websocket';
+import Leaderboard from './components/Leaderboard/Leaderboard';
 
 export const App = () => {
   const isAuth = useSelector(selectUser);
@@ -68,6 +69,7 @@ export const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/team-stats" element={<TeamStats />} />
               <Route path="/manage-team" element={<ManageTeam />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
             </>
           )}
           <Route path="*" element={<Navigate to="/" />} />

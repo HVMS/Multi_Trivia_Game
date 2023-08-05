@@ -8,6 +8,8 @@ import { BsChevronLeft, BsChevronRight, BsFill1SquareFill, BsFillPencilFill } fr
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { postData } from '../../services/utils';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../redux/userSlice';
 interface Team {
     wins: string;
     members: any[];
@@ -39,7 +41,9 @@ interface comparedata {
 
 function Profile() {
     const navigate=useNavigate();
-    const userID = "daniella@gmail.com";
+    const userDataStore = useSelector(selectUser);
+    // const userID = "daniella@gmail.com";
+    const userID = userDataStore.email;
     const [user, setuser] = useState<userdata | null>(null);
     const [comp, setcomp] = useState<comparedata[]>([]);
     const nameRef = useRef<HTMLInputElement | null>(null);
