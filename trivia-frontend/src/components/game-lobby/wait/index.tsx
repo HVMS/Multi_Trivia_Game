@@ -1,5 +1,5 @@
 
-import { useLocation , useNavigate} from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ChakraProvider, Text } from '@chakra-ui/react'
 import { Card } from 'react-bootstrap';
 import { getRemainingTimeInSeconds } from '../../../services/utils';
@@ -17,27 +17,16 @@ const Wait = () => {
 
     const [timeLeft, setTimeLeft] = useState(getRemainingTimeInSeconds(startTime));
 
-
-
     useEffect(() => {
-
         if (timeLeft > 0) {
-    
-          if (timeLeft === 1) {
-    
-            naviagate('/gaming_experience',{state:{gameName,teamName}})
-    
-          }
-    
-          setTimeout(() => {
-    
-            setTimeLeft((current) => current - 1);
-    
-          }, 1000);
-    
+            if (timeLeft === 1) {
+                naviagate('/gaming_experience', { state: { gameName, teamName } })
+            }
+            setTimeout(() => {
+                setTimeLeft((current) => current - 1);
+            }, 1000);
         }
-    
-      }, [timeLeft]);
+    }, [timeLeft]);
 
     return (<ChakraProvider><div className="d-flex align-items-center justify-content-center w-100" style={{ height: "calc(100vh - 40px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
 
