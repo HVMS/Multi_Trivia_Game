@@ -83,9 +83,14 @@ export async function shootInvition(URL: string) {
   }
 }
 
-export const shootPushNotification = async (message: string) => {
+export const shootNotification = async (type: string, message: string) => {
   const sqs = new AWS.SQS();
-  const messageBody = `\"{\\"type\\":\\"PUSH\\",\\"message\\":\\"${message}\\"}\"`;
+  let messageBody = "";
+  if (type === "PUSH") {
+    messageBody = `\"{\\"type\\":\\"PUSH\\",\\"message\\":\\"${message}\\"}\"`;
+  } else {
+    messageBody = `\"{\\"type\\":\\"EMAIL\\",\\"message\\":\\"${message}\\"}\"`;
+  }
   const queueURL =
     "https://sqs.us-east-1.amazonaws.com/028513566686/trivia-notification-queue";
   const params = { MessageBody: messageBody, QueueUrl: queueURL };

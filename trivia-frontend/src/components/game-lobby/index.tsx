@@ -18,7 +18,7 @@ import {
 } from "@chakra-ui/react";
 import GameLobbyCard from "../ui/GameLobbyCard";
 import React, { useEffect, useRef, useState } from "react";
-import { getData, postData, shootPushNotification } from "../../services/utils";
+import { getData, postData, shootNotification } from "../../services/utils";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import useWebSocket from 'react-use-websocket';
@@ -31,7 +31,7 @@ const GameLobby = (props: any) => {
 
     const handleTeamChange = async (e: any) => {
         setSelectedTeam(e.target.value);
-        await shootPushNotification(`Team Changed: ${e.target.value}.`);
+        await shootNotification("PUSH", `Team Changed: ${e.target.value}.`);
     }
 
     const filterClickHandler = async (popoverData: any) => {
