@@ -9,7 +9,6 @@ import {
   Stack
 } from '@chakra-ui/react';
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, query, orderBy } from 'firebase/firestore';
-import { getRemainingTimeInSeconds } from '../../services/utils';
 
 interface GameData {
   game_name: string;
@@ -41,6 +40,8 @@ const firebaseConfig = {
   measurementId: "G-8G72EE3EJN"
 };
 
+initializeApp(firebaseConfig);
+
 const TIMER_KEY = 'quiz_timer';
 
 const Temp = () => {
@@ -54,12 +55,6 @@ const Temp = () => {
   const teamNameFromState = location.state.teamName;
   console.log(teamNameFromState);
   console.log(typeof teamNameFromState);
-
-  // Making a temp list of users
-  // const teamMembersList : string[] = [
-  //   'test1@gmail.com',
-  //   'test2@gmail.com',
-  // ];
 
   const toast = useToast();
   const navigate = useNavigate();
@@ -152,8 +147,6 @@ const Temp = () => {
   const [teamDetails, setTeamDetails] = useState<any>({});
 
   useEffect(() => {
-    // Initialize Firebase
-    initializeApp(firebaseConfig);
 
     // Fetch and subscribe to the team details in Firestore
     const firestore = getFirestore();
@@ -186,7 +179,6 @@ const Temp = () => {
   }, [currentQuestionIndex, questions]);
 
   useEffect(() => {
-    initializeApp(firebaseConfig);
     fetchData();
     fetchTeamMembersFromDynamoDB(teamNameFromState);
   }, []);
@@ -406,8 +398,6 @@ const Temp = () => {
   const [chatMessages, setChatMessages] = useState<{ userEmail: string; message: string }[]>([]);
 
   useEffect(() => {
-    // Initialize Firebase
-    initializeApp(firebaseConfig);
 
     // Fetch and subscribe to the chat messages in Firestore
     const firestore = getFirestore();
