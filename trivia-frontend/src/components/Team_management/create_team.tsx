@@ -8,7 +8,8 @@ const createTeam = () => {
 
     const user = localStorage.getItem('email');
     
-    async function generateTeamName() {
+    async function generateTeamName(e:any) {
+        e.preventDefault();
       const configuration = new Configuration({
         apiKey: process.env.REACT_APP_OPENAI_API_KEY,
       });
@@ -20,15 +21,18 @@ const createTeam = () => {
         max_tokens: 15,
         temperature: 0.5,
       });
-      console.log(response.data.choices[0].text);
-        setTeamName(response.data.choices[0].text);
+      console.log(response);
+      console.log(response.data.choices[0])
+      let newName=response.data.choices[0].text?.split('\n').join('');
+      console.log(newName);
+        setTeamName(newName);
     }
     
 
-    const handleSubmit = () => {
+    const handleSubmit = (values: any) => {
         console.log(teamName);
         console.log(user);
-        var values = {
+        values = {
             "Team": teamName,
             "user1": user,
         };
@@ -59,10 +63,10 @@ const createTeam = () => {
             <div>
             <Formik
                     initialValues={{ teamName: '', user1: '' }}
-                    onSubmit={handleSubmit}
+                    onSubmit={(initialValues)=>handleSubmit(initialValues)}
                 >
                     <Form>
-                        <button onClick={()=>generateTeamName()}>Generate Team Name</button>
+                        <button onClick={(e:any)=>generateTeamName(e)}>Generate Team Name</button>
                         <br/>
                         <br/>
                         <Field
