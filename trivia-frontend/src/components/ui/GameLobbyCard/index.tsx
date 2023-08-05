@@ -1,14 +1,31 @@
-import { Card, CardHeader, CardBody, CardFooter, Image, Stack, Heading, Text, Divider, ButtonGroup, Button, Flex, Box } from '@chakra-ui/react';
+import { Card, CardBody, CardFooter, Image, Stack, Heading, Text, Divider, ButtonGroup, Button, Flex, Box } from '@chakra-ui/react';
+import { shootInvition } from '../../../services/utils';
+import {useNavigate} from 'react-router-dom'
+
 
 const GameLobbyCard = (props: any) => {
+
     const {
         gameName,
         difficultyLevel,
         timeframe,
         categories
     } = props;
+
+    const navigate = useNavigate()
+
+    const teamName = "TheWizards"
+    const handleClick = async () => {
+        const DATE = Date.now() + 1 * 60 * 1000;
+        const host = "http://localhost:3000"
+        const path = `/game-lobby/wait?startTime=${DATE}&&gameName=${gameName.replace(" ", "")}&&teamName=${teamName}`;
+        shootInvition(host+path);
+        navigate(path)
+    }
+
     return (
         <>
+
             <Card maxW='sm'>
                 <CardBody>
                     <Image
@@ -38,7 +55,7 @@ const GameLobbyCard = (props: any) => {
                 <Divider />
                 <CardFooter>
                     <ButtonGroup spacing='2'>
-                        <Button variant='solid' colorScheme='teal'>
+                        <Button variant='solid' colorScheme='teal' onClick={handleClick} >
                             Play now
                         </Button>
                     </ButtonGroup>
@@ -47,5 +64,6 @@ const GameLobbyCard = (props: any) => {
         </>
     )
 }
+
 
 export default GameLobbyCard;
