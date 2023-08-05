@@ -68,7 +68,7 @@ export async function getData(url: string, token?: string) {
   }
 }
 
-export async function shootInvition(URL:string) {
+export async function shootInvition(URL: string) {
   const sqs = new AWS.SQS();
   const queueURL =
     "https://sqs.us-east-1.amazonaws.com/028513566686/trivia-notification-queue";
@@ -78,35 +78,30 @@ export async function shootInvition(URL:string) {
 
   try {
     let data = await sqs.sendMessage(params).promise();
-    console.log(data)
-    console.log("JSON==>", params);
-    console.log(
-      `Message sent successfully to the queue.`,
-      data.MessageId
-    );
   } catch (err) {
     console.log("Error", err);
   }
 }
 
-export function getRemainingTimeInSeconds(startTime:any) {
+export const shootPushNotification = async (message: string) => {
+  const sqs = new AWS.SQS();
+  const messageBody = `\"{\\"type\\":\\"PUSH\\",\\"message\\":\\"${message}\\"}\"`;
+  const queueURL =
+    "https://sqs.us-east-1.amazonaws.com/028513566686/trivia-notification-queue";
+  const params = { MessageBody: messageBody, QueueUrl: queueURL };
+  try {
+    let data = await sqs.sendMessage(params).promise();
+  } catch (err) {
+    console.log("Error", err);
+  }
+};
 
-   
-  
-    const currentTime = Date.now();
-  
-   
-  
-    const timeDifferenceInMillis = startTime - currentTime;
-  
-    const timeDifferenceInSeconds = Math.floor(timeDifferenceInMillis / 1000);
-  
-    if (timeDifferenceInMillis > 0) {
-  
-      return timeDifferenceInSeconds;
-  
-    }
-  
-    return 0;
-  
-  };
+export function getRemainingTimeInSeconds(startTime: any) {
+  const currentTime = Date.now();
+  const timeDifferenceInMillis = startTime - currentTime;
+  const timeDifferenceInSeconds = Math.floor(timeDifferenceInMillis / 1000);
+  if (timeDifferenceInMillis > 0) {
+    return timeDifferenceInSeconds;
+  }
+  return 0;
+}
