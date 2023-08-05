@@ -46,7 +46,7 @@ export default function Leaderboard() {
     .then((resp) => {
       console.log("data received")
       console.log(JSON.parse(resp.data.body))
-      // resp.data.body.sort((a: { totalPoints: string; }, b: { totalPoints: string; }) => parseInt(b.totalPoints) - parseInt(a.totalPoints));
+      resp.data.body.sort((a: { totalPoints: string; }, b: { totalPoints: string; }) => parseInt(b.totalPoints) - parseInt(a.totalPoints));
       setTeam(JSON.parse(resp.data.body));
   })
   .catch((error) => {
@@ -64,7 +64,7 @@ export default function Leaderboard() {
     
         <div>
      {btype=="Individual" ? (
-    lead.map((user, currentIndex) => ( // Ensure to include the currentIndex argument
+    lead.map((user, currentIndex) => ( 
       <div key={currentIndex}>
         <Card>
           <Card.Title>Name: {user?.name}</Card.Title>
@@ -100,26 +100,9 @@ export default function Leaderboard() {
       </div>
     ))
   ) :(
-    teams.map((team, currentIndex) => ( // Ensure to include the currentIndex argument
+    teams.map((team, currentIndex) => ( 
       <div key={currentIndex}>
         <Card>
-        {/* {
-    "Losses": {
-        "N": "7"
-    },
-    "TeamID": {
-        "S": "TestIntegration"
-    },
-    "TotalPoints": {
-        "N": "0"
-    },
-    "GamesPlayed": {
-        "N": "18"
-    },
-    "Wins": {
-        "N": "11"
-    }
-} */}
           <Card.Title>Name: {team?.TeamID?.S}</Card.Title>
           <Card.Body>
                             <div className="container customer-profile my-4">
