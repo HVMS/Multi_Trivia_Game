@@ -11,6 +11,7 @@ import PlayGamePage from './components/game_experience/gamePage';
 import Temp from './components/game_experience/temp';
 import TeamStats from './components/Team_management/team_stats';
 import ManageTeam from './components/Team_management/manage_team';
+import Register from './components/User_Registration/register';
 
 export const App = () => {
   return (
@@ -27,6 +28,7 @@ export const App = () => {
           <Route path="/gaming_experience" element={<Temp/>} />
           <Route path="/team-stats" element={<TeamStats/>} />
           <Route path="/manage-team" element={<ManageTeam/>} />
+          <Route path="/register" element={<Register/>} />
         </Routes>
       </div>
       <ToastContainer position="bottom-right"

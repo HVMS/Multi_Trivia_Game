@@ -1,0 +1,114 @@
+.register h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+ .register-body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .register-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+.form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group input[type="text"],
+  .form-group input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  .register label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .register input[type="text"],
+  .register input[type="email"],
+  .register input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .register-button {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+.social-login-button {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.social-login-button img {
+  height: 25px;
+  width: 25px;
+  margin-right: 10px;
+}
+  .register-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .register p {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .register .error-message {
+    color: #dc3545;
+    margin-top: 5px;
+  }
+  
+  .register .or-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .register .or-separator::before,
+  .register .or-separator::after {
+    content: "";
+    flex-grow: 1;
+    height: 1px;
+    background-color: #ccc;
+  }
+  
+  .register .or-separator span {
+    padding: 0 10px;
+    color: #777;
+    font-weight: bold;
+  }

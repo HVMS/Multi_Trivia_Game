@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import TeamNameGenerator from './components/Team_management/team_name';
 import TeamStatsGenerator from './components/Team_management/team_stats';
-import InvitePlayer from './components/Team_management/invite_player';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import { Provider } from "react-redux";
