@@ -12,27 +12,7 @@ import Temp from './components/game_experience/temp';
 import Wait from './components/game-lobby/wait';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-interface GameData {
-  game_name: string;
-  game_difficulty_level: string;
-  game_timeframe: number;
-  userEmail: string;
-  team_name: string;
-}
-
-interface TeamData {
-  team_name: string;
-  userEmail: string[];
-}
-
 export const App = () => {
-  
-  const [gameData, setGameData] = useState<GameData>({game_name: 'Game 4',
-  game_difficulty_level: 'Easy',
-  game_timeframe: 200,
-  userEmail: 'test5gmail.com',
-  team_name: 'Team 4',
-},); // Initialize with an empty object
 
   return (
     <Router>
@@ -45,7 +25,7 @@ export const App = () => {
           <Route path="/createGame" element={<GameCreatePage />} />
           <Route path='/game-lobby' element={<GameLobby />} />
           <Route path="/playGame" element={<PlayGamePage/>} />
-          <Route path="/gaming_experience/:userEmail" element={<Temp gameData={gameData}/>} />
+          <Route path="/gaming_experience" element={<Temp/>} />
           <Route path="/game-lobby/wait" element={<Wait />} />
         </Routes>
       </div>

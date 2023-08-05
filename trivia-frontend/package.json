@@ -16,6 +16,7 @@
     "aws-sdk": "^2.1430.0",
     "axios": "^1.4.0",
     "bootstrap": "^5.2.3",
+    "firebase": "^10.1.0",
     "http": "^0.0.1-security",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.4",

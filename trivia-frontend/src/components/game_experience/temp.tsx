@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Button, Card, Center, ChakraProvider, Heading, Text, useToast } from '@chakra-ui/react';
-import { useNavigate  } from 'react-router-dom'; // Import useHistory hook
+import { useNavigate, useLocation  } from 'react-router-dom'; // Import useHistory hook
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, updateDoc, setDoc, addDoc, getDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
 
 interface GameData {
   game_name: string;
-  game_difficulty_level: string;
-  game_timeframe: number;
-  userEmail: string;
-  team_name: string;
+  gameDifficultyLevel: string;
+  gameTimeFrame: string;
+  gameCategory: string;
 }
 
 interface Question {
@@ -37,17 +36,102 @@ const firebaseConfig = {
 
 const TIMER_KEY = 'quiz_timer';
 
-const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
+const Temp: React.FC = () => {
 
-  const [teamData, setTeamData] = useState<TeamData>({
-    team_name: 'Team 4',
-    userEmail: ["test1@gmail.com", "test2@gmail.com"]
+  const location = useLocation();
+
+  const gameNameFromState = location.state.gameName;
+  console.log(gameNameFromState);
+  console.log(typeof gameNameFromState);
+
+  const teamNameFromState = location.state.teamName;
+  console.log(teamNameFromState);
+  console.log(typeof teamNameFromState);
+
+  // Making a temp list of users
+  const teamMembersList : string[] = [
+    'vr607491@gmail.com',
+    'kushsutaria.99@gmail.com',
+  ];
+
+  useEffect(() => {
+    fetchGameTimeFrameResponse();
+    fetchData();
+  }, []);
+
+  // Initialize the gameTimeFrame state using localStorage or fetch from API
+  const [gameTimeFrame, setGameTimeFrame] = useState<number | null>(() => {
+    // Check if the gameTimeFrame already exists in localStorage
+    const storedTimeFrame = localStorage.getItem(TIMER_KEY);
+    if (storedTimeFrame) {
+      return Number(storedTimeFrame);
+    } else {
+      return null;
+    }
   });
 
-  const userEmailId = "test1@gmail.com";
-  const isEmailIdExists = teamData.userEmail?.includes(userEmailId);
-  console.log("Yes it is exists", isEmailIdExists);
-  
+  // Function to decrement gameTimeFrame every second
+  useEffect(() => {
+    let timerId: NodeJS.Timeout;
+
+    if (gameTimeFrame && gameTimeFrame > 0) {
+      timerId = setInterval(() => {
+        setGameTimeFrame((prevTime) => {
+          const newTime = prevTime ? prevTime - 1 : null;
+
+          // Store the newTime in localStorage
+          if (newTime !== null) {
+            localStorage.setItem(TIMER_KEY, String(newTime));
+          } else {
+            // Remove the item from localStorage when newTime is null
+            localStorage.removeItem(TIMER_KEY);
+            // Display toast message when the time reaches zero
+            toast({
+              title: 'Time is up!',
+              description: 'The time for the quiz has ended.',
+              status: 'warning',
+              duration: 5000,
+              isClosable: true,
+            });
+            // Clear the interval
+            clearInterval(timerId);
+          }
+
+          return newTime;
+        });
+      }, 1000);
+    }
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(timerId);
+  }, [gameTimeFrame]);
+
+  const fetchGameTimeFrameResponse = async () => {
+    try {
+      const response = await fetch('https://w3r49v036h.execute-api.us-east-1.amazonaws.com/prod/getgames');
+      const data = await response.json();
+      
+      // Check if data is an array before setting it to state
+      if (typeof data === "object" && !Array.isArray(data)) {
+        const dataArray = Object.values(data['body']);
+
+        const gameDataFromResponse : any = dataArray.find((game:any) => game.game_name === gameNameFromState);
+
+        if (gameDataFromResponse){
+          const timeFrame = gameDataFromResponse.gameTimeFrame;
+          const parsedTimeFrame = Number(timeFrame.replace(/\D/g, ''));
+          setGameTimeFrame(parsedTimeFrame);
+        }else{
+          console.log("Not found");
+        }
+      } else {
+        console.log("Wrong path!!");
+      }
+    } catch (error) {
+      console.error('Error fetching game data:', error);
+    }
+  };
+
   const [userScore, setUserScore] = useState(0);
   const [teamScore, setTeamScore] = useState<number>(0);
   
@@ -64,45 +148,6 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   
   const [isLastQuestionDisplayed, setIsLastQuestionDisplayed] = useState(false);
-  const initialTimeframe = useMemo(() => {
-    const storedTimeframe = localStorage.getItem(TIMER_KEY);
-    if (storedTimeframe) {
-      return parseInt(storedTimeframe, 10);
-    }
-    return gameData.game_timeframe;
-  }, [gameData.game_timeframe]);
-
-  const [timeRemaining, setTimeRemaining] = useState(initialTimeframe);
-
-  const addUserEmail = async (email: string) => {
-    try {
-      const firestore = getFirestore();
-      const teamDataRef = doc(firestore, 'teamData', 'team4');
-
-      // Fetch the existing team data from Firestore
-      const teamDataSnapshot = await getDoc(teamDataRef);
-      const existingTeamData = teamDataSnapshot.exists() ? teamDataSnapshot.data() : {};
-
-      // Update the userEmail array with the new email
-      const updatedUserEmails = [
-        ...(existingTeamData.userEmail || []),
-        email,
-      ];
-
-      // Update the teamData in Firestore with the new userEmail array
-      await updateDoc(teamDataRef, { userEmail: updatedUserEmails });
-
-    } catch (error) {
-      console.error('Error adding user email:', error);
-    }
-  };
-
-  useEffect(() => {
-    localStorage.setItem(TIMER_KEY, timeRemaining.toString());
-    if (timeRemaining === 0) {
-      localStorage.removeItem(TIMER_KEY);
-    }
-  }, [timeRemaining]);
 
   useEffect(() => {
     if (currentQuestionIndex === questions.length - 1) {
@@ -112,101 +157,67 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     }
   }, [currentQuestionIndex, questions]);
 
-  useEffect(() => {
-    
-    initializeApp(firebaseConfig);
-
-    fetchData();
-    const timer = setInterval(() => {
-      setTimeRemaining((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (timeRemaining === 0) {
-      handleTimerEnd();
-      redirectToLeaderBoard();
-    }
-  }, [timeRemaining]);
-
-  const redirectToLeaderBoard = () => {
-    navigate('/leaderboard');
-  };
-
-  const handleTimerEnd = () => {
-    toast({
-      title: 'Time is up!',
-      description: 'The quiz has ended.',
-      status: 'info',
-      duration: 5000,
-      isClosable: true,
-    });
-    setSelectedOption(null);
-    setOptionsDisabled(true);
-  };
-
   const currentQuestion = questions[currentQuestionIndex];
   const isOptionSelected = selectedOption !== null;
   const isCorrectAnswer =
     isOptionSelected && currentQuestion?.question_options.L[selectedOption].S === currentQuestion.question_right_answer;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
-  const updateScoresInDatabase = async (newUserScore: number, newTeamScore: number) => {
-    try {
+  // const updateScoresInDatabase = async (newUserScore: number, newTeamScore: number) => {
+  //   try {
 
-      const firestore = getFirestore();
-      const gameScoreRef = doc(firestore, 'gameScore', 'gameDetails');
+  //     const firestore = getFirestore();
+  //     const gameScoreRef = doc(firestore, 'gameScore', 'gameDetails');
 
-      // Fetch the existing game details from the database
-      const gameScoreSnapshot = await getDoc(gameScoreRef);
-      const existingGameDetails = gameScoreSnapshot.exists() ? gameScoreSnapshot.data() : {};
+  //     // Fetch the existing game details from the database
+  //     const gameScoreSnapshot = await getDoc(gameScoreRef);
+  //     const existingGameDetails = gameScoreSnapshot.exists() ? gameScoreSnapshot.data() : {};
 
-      console.log("Existing game details: ",existingGameDetails);
+  //     console.log("Existing game details: ",existingGameDetails);
 
-      const userEmail = gameData.userEmail;
-      const teamDetails = existingGameDetails?.teamDetails || {};
+  //     const userEmail = gameData.userEmail;
+  //     const teamDetails = existingGameDetails?.teamDetails || {};
 
-      // Check if the user's email exists in the userScores array
-      const userIndex = teamDetails.userScores?.findIndex((user:any) => user.useremail === userEmail);
+  //     // Check if the user's email exists in the userScores array
+  //     const userIndex = teamDetails.userScores?.findIndex((user:any) => user.useremail === userEmail);
 
-      if (userIndex !== undefined && userIndex !== -1) {
-        // If the user's email exists, update the score for that user
-        teamDetails.userScores[userIndex].score = newUserScore;
-      } else {
-        // If the user's email doesn't exist, add a new entry for the user
-        teamDetails.userScores = [
-          ...(teamDetails.userScores || []),
-          { useremail: userEmail, score: newUserScore },
-        ];
-      }
+  //     if (userIndex !== undefined && userIndex !== -1) {
+  //       // If the user's email exists, update the score for that user
+  //       teamDetails.userScores[userIndex].score = newUserScore;
+  //     } else {
+  //       // If the user's email doesn't exist, add a new entry for the user
+  //       teamDetails.userScores = [
+  //         ...(teamDetails.userScores || []),
+  //         { useremail: userEmail, score: newUserScore },
+  //       ];
+  //     }
 
-      // Update the team score in the game details
-      teamDetails.teamScore = {
-        totalScore: newTeamScore,
-      };
+  //     // Update the team score in the game details
+  //     teamDetails.teamScore = {
+  //       totalScore: newTeamScore,
+  //     };
 
-      console.log("updatedTeamDetails details: ",teamDetails);
+  //     console.log("updatedTeamDetails details: ",teamDetails);
 
-      // Update the game details in the database
-      const updatedGameDetails = {
-        gameName: gameData.game_name,
-        teamDetails: teamDetails,
-      };
+  //     // Update the game details in the database
+  //     const updatedGameDetails = {
+  //       gameName: gameData.game_name,
+  //       teamDetails: teamDetails,
+  //     };
 
-      await setDoc(gameScoreRef, updatedGameDetails);
-    } catch (error) {
-      console.error('Error updating user and team scores:', error);
-    }
-  };
+  //     await setDoc(gameScoreRef, updatedGameDetails);
+  //   } catch (error) {
+  //     console.error('Error updating user and team scores:', error);
+  //   }
+  // };
 
   const handleOptionClick = (index: number) => {
     if (!optionsDisabled) {
       if (currentQuestion.question_options.L[index].S === currentQuestion.question_right_answer) {
         // If the selected option is correct, increment the user's score and the team score
-        setUserScore((prevUserScore) => prevUserScore + 1);
-        setTeamScore((prevTeamScore) => prevTeamScore + 1);
-        updateScoresInDatabase(userScore + 1, teamScore + 1);
+        // setUserScore((prevUserScore) => prevUserScore + 1);
+        // setTeamScore((prevTeamScore) => prevTeamScore + 1);
+        // updateScoresInDatabase(userScore + 1, teamScore + 1);
       }
       setSelectedOption(index);
       setOptionsDisabled(true);
@@ -215,14 +226,13 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
 
   // Function to make the API call
   const fetchData = async () => {
-    console.log(gameData.game_name);
     try {
       const response = await fetch('https://76zhbkbpj1.execute-api.us-east-1.amazonaws.com/prod/assignquestions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ game_name : gameData.game_name }),
+        body: JSON.stringify({ game_name : gameNameFromState }),
       });
 
       if (!response.ok) {
@@ -231,11 +241,9 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
         const responseBody = await response.json();
         const questions = responseBody.body;
 
-        // Update the state with the fetched questions
-        setQuestions(questions);
-        setDataFetched(true);
-
         console.log("Questions:", questions);
+        setQuestions(questions);
+        // setDataFetched(true);
       }
 
     } catch (error) {
@@ -266,14 +274,14 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
     <ChakraProvider>
       <Center h="100vh">
         <Box maxW="xl">
-          <Box position="absolute" top={4} left={4} fontSize="xl">
+          <Box position="absolute" top={80} left={4} fontSize="xl">
             Current Score: {userScore}
           </Box>
           <Box position="absolute" top={36} left={4} fontSize="xl">
             Team Score: {teamScore}
           </Box>
           <Box position="absolute" top={4} right={4} fontSize="xl">
-            Time remaining: {timeRemaining} s
+            Time Frame: {gameTimeFrame}
           </Box>
           {currentQuestion ? (
             <Box borderWidth={2} borderRadius="lg" borderColor={isOptionSelected ? (isCorrectAnswer ? 'green' : 'red') : 'black'} p={8}>
@@ -284,7 +292,7 @@ const Temp: React.FC<{gameData : GameData}> = ({gameData}) => {
               {currentQuestion.question_options.L.map((option, index) => (
                 <Card
                   key={index}
-                  onClick={() => handleOptionClick(index)}
+                  // onClick={() => handleOptionClick(index)}
                   bg={
                     optionsDisabled
                       ? option.S === currentQuestion.question_right_answer
