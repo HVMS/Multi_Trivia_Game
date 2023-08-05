@@ -1,6 +1,7 @@
 import { Card, CardBody, CardFooter, Image, Stack, Heading, Text, Divider, ButtonGroup, Button, Flex, Box } from '@chakra-ui/react';
 import { shootInvition } from '../../../services/utils';
 import {useNavigate} from 'react-router-dom'
+import IMAGE from "./alternate.jpeg";
 
 
 const GameLobbyCard = (props: any) => {
@@ -9,15 +10,15 @@ const GameLobbyCard = (props: any) => {
         gameName,
         difficultyLevel,
         timeframe,
-        categories
+        categories,
+        teamName
     } = props;
 
     const navigate = useNavigate()
 
-    const teamName = "TheWizards"
     const handleClick = async () => {
         const DATE = Date.now() + 1 * 60 * 1000;
-        const host = "http://localhost:3000"
+        const host = "https://sdp3-trivia-game-zktomuivzq-uc.a.run.app"
         const path = `/game-lobby/wait?startTime=${DATE}&&gameName=${gameName.replace(" ", "")}&&teamName=${teamName}`;
         shootInvition(host+path);
         navigate(path)
@@ -29,8 +30,9 @@ const GameLobbyCard = (props: any) => {
             <Card maxW='sm'>
                 <CardBody>
                     <Image
-                        src={`https://picsum.photos/344/230?random=${Math.random()}`}
-                        alt='Game'
+                        // src={`https://picsum.photos/344/230?random=${Math.random()}`}
+                        src={IMAGE}
+                        alt="GAME"
                         borderRadius='lg'
                     />
                     <Stack mt='4' spacing='3'>
