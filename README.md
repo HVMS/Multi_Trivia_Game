@@ -7,10 +7,10 @@
 "Trivia Titans" is an online trivia game platform designed to foster collaborative learning and engagement. The initiative is designed for fans of trivia who compete in real-time quizzes in teams.
 Along with other crucial features, the system includes user identification, profile administration, team management, and interactive gameplay.
 
-## Add your files
+## Features in the game
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+[1] User Authentication
+[2]
 
 ```
 cd existing_repo
