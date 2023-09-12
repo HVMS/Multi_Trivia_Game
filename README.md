@@ -1,12 +1,11 @@
-# SDP 3
+# Trivia Titans Game
 
 
 
-## Getting started
+## Introduction
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+"Trivia Titans" is an online trivia game platform designed to foster collaborative learning and engagement. The initiative is designed for fans of trivia who compete in real-time quizzes in teams.
+Along with other crucial features, the system includes user identification, profile administration, team management, and interactive gameplay.
 
 ## Add your files
 
