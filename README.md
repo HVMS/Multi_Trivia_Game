@@ -20,9 +20,10 @@ Along with other crucial features, the system includes user identification, prof
 - Automated Question Tagging
 - Virtual Assistance (using Amazon Lex)
 
-## Integrate with your tools
+## Architecture
 
-- [ ] [Set up project integrations](https://git.cs.dal.ca/siddhapura/sdp-3/-/settings/integrations)
+- ![image](https://github.com/HVMS/Multi_Trivia_Game/assets/38061955/c73705ca-aeb7-4025-afe9-39765a58a44b)
+
 
 ## Collaborate with your team
 
