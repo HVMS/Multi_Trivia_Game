@@ -9,15 +9,16 @@ Along with other crucial features, the system includes user identification, prof
 
 ## Features in the game
 
-- [1] User Authentication
-- [2]
-
-```
-cd existing_repo
-git remote add origin https://git.cs.dal.ca/siddhapura/sdp-3.git
-git branch -M main
-git push -uf origin main
-```
+- User Authentication
+- User Profile Management
+- Team Management
+- Trivia Game Lobby
+- In-Game Experience
+- Leaderboards
+- Trivia Content Management (Admin Role)
+- Notifications and Alerts
+- Automated Question Tagging
+- Virtual Assistance (using Amazon Lex)
 
 ## Integrate with your tools
 
