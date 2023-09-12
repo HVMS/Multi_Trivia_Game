@@ -26,7 +26,7 @@ Along with other crucial features, the system includes user identification, prof
 
 ## Services Used
 
-- Amazon Services
+- Amazon Web Services
   - Amazon Cognito (User Authentication)
   - AWS Lambda (Serverless functions)
   - Amazon SQS / SNS (Notification and Alerts)
