@@ -9,8 +9,8 @@ Along with other crucial features, the system includes user identification, prof
 
 ## Features in the game
 
-[1] User Authentication -
-[2]
+- [1] User Authentication
+- [2]
 
 ```
 cd existing_repo
