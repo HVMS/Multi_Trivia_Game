@@ -1,11 +1,6 @@
-# Trivia Titans Game
-
-
-
-## Introduction
-
-"Trivia Titans" is an online trivia game platform designed to foster collaborative learning and engagement. The initiative is designed for fans of trivia who compete in real-time quizzes in teams.
-Along with other crucial features, the system includes user identification, profile administration, team management, and interactive gameplay.
+# Trivia Titans Gam
+- "Trivia Titans" is an online trivia game platform designed to foster collaborative learning and engagement. The initiative is designed for fans of trivia who compete in real-time quizzes in teams.
+  Along with other crucial features, the system includes user identification, profile administration, team management, and interactive gameplay.
 
 ## Technology Stack
 
@@ -27,7 +22,7 @@ Along with other crucial features, the system includes user identification, prof
 
 ## Architecture
 
-![image](https://github.com/HVMS/Multi_Trivia_Game/assets/38061955/c73705ca-aeb7-4025-afe9-39765a58a44b)
+![image](https://github.com/HVMS/Multi_Trivia_Game/assets/38061955/c33b1807-4a6c-408b-af78-e945e52e9c74)
 
 ## Services Used
 
