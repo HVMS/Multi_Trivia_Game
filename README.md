@@ -1,4 +1,4 @@
-# Trivia Titans Gam
+# Trivia Titans Game
 - "Trivia Titans" is an online trivia game platform designed to foster collaborative learning and engagement. The initiative is designed for fans of trivia who compete in real-time quizzes in teams.
   Along with other crucial features, the system includes user identification, profile administration, team management, and interactive gameplay.
 
